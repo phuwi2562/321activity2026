@@ -1,0 +1,1539 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>3-2-1 คนคำใหญ่ไร้พุง</title>
+  <style>
+    :root {
+      --green: #0f8f5f;
+      --green-dark: #086344;
+      --lime: #b8db5b;
+      --blue: #2477b9;
+      --ink: #17231d;
+      --muted: #66736d;
+      --line: #dce7df;
+      --paper: #f7faf4;
+      --white: #ffffff;
+      --danger: #c33d3d;
+      --warn: #b87511;
+      --shadow: 0 14px 36px rgba(16, 55, 35, .14);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        linear-gradient(180deg, rgba(15, 143, 95, .08), rgba(255, 255, 255, 0) 280px),
+        var(--paper);
+      color: var(--ink);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    .app {
+      width: min(100%, 520px);
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 14px 14px 92px;
+    }
+
+    .hero {
+      min-height: 210px;
+      border-radius: 0 0 28px 28px;
+      margin: -14px -14px 16px;
+      padding: 20px 16px 18px;
+      color: white;
+      background:
+        linear-gradient(135deg, rgba(8, 99, 68, .92), rgba(15, 143, 95, .72)),
+        url("https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=1200&q=80") center/cover;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      width: fit-content;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      border: 1px solid rgba(255, 255, 255, .46);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .14);
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .hero-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .admin-toggle {
+      flex: none;
+      width: 34px;
+      height: 34px;
+      border: 1px solid rgba(255, 255, 255, .46);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .14);
+      color: white;
+      font-size: 16px;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .admin-toggle.is-admin {
+      background: var(--lime);
+      border-color: var(--lime);
+      color: var(--green-dark);
+    }
+
+    h1 {
+      margin: 30px 0 8px;
+      max-width: 12em;
+      font-size: clamp(28px, 9vw, 40px);
+      line-height: 1.04;
+      letter-spacing: 0;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 27em;
+      color: rgba(255, 255, 255, .92);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .quick {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin: 0 0 14px;
+    }
+
+    .metric,
+    .panel,
+    .history-item {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, .92);
+      box-shadow: 0 8px 22px rgba(33, 64, 45, .07);
+    }
+
+    .metric {
+      padding: 10px;
+      min-height: 82px;
+    }
+
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .metric strong {
+      display: block;
+      margin-top: 5px;
+      color: var(--green-dark);
+      font-size: 22px;
+      line-height: 1;
+    }
+
+    .panel {
+      padding: 14px;
+      margin: 12px 0;
+    }
+
+    .panel-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.25;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      color: #31423a;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      min-height: 46px;
+      border: 1px solid #ccdbd2;
+      border-radius: 8px;
+      padding: 10px 11px;
+      background: white;
+      color: var(--ink);
+      outline: none;
+    }
+
+    textarea {
+      min-height: 76px;
+      resize: vertical;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(15, 143, 95, .14);
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .btn {
+      min-height: 48px;
+      border: 0;
+      border-radius: 8px;
+      padding: 0 14px;
+      color: white;
+      background: var(--green);
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .btn.secondary {
+      border: 1px solid var(--line);
+      color: var(--green-dark);
+      background: white;
+    }
+
+    .status {
+      margin-top: 10px;
+      min-height: 20px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      border-radius: 999px;
+      padding: 7px 10px;
+      background: #eef7e4;
+      color: var(--green-dark);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .chip.warn {
+      background: #fff4dd;
+      color: var(--warn);
+    }
+
+    .chip.danger {
+      background: #ffe9e9;
+      color: var(--danger);
+    }
+
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .comparison-card {
+      min-height: 76px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      background: #fbfdf8;
+    }
+
+    .comparison-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .comparison-card strong {
+      display: block;
+      margin-top: 4px;
+      font-size: 18px;
+      line-height: 1.15;
+    }
+
+    .comparison-card small {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .filter-grid {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: end;
+      margin: 0 0 12px;
+    }
+
+    .chart-wrap {
+      height: 238px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+      padding: 8px;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .history-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .history-item {
+      padding: 12px;
+    }
+
+    .history-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .history-head strong {
+      font-size: 15px;
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .village-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .village-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      background: #fbfdf8;
+    }
+
+    .village-row strong {
+      display: block;
+      font-size: 14px;
+      line-height: 1.3;
+    }
+
+    .village-bars {
+      display: grid;
+      gap: 5px;
+      margin-top: 8px;
+    }
+
+    .bar {
+      height: 7px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #e8efe9;
+    }
+
+    .bar span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--green);
+    }
+
+    .mini {
+      min-height: 54px;
+      border-radius: 8px;
+      padding: 8px;
+      background: #f4f8f1;
+    }
+
+    .mini span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .mini b {
+      display: block;
+      margin-top: 2px;
+      color: var(--ink);
+      font-size: 14px;
+    }
+
+    .tab {
+      display: none;
+    }
+
+    .tab.active {
+      display: block;
+    }
+
+    .nav {
+      position: fixed;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 20;
+      border-top: 1px solid var(--line);
+      background: rgba(255, 255, 255, .96);
+      backdrop-filter: blur(16px);
+    }
+
+    .nav-inner {
+      width: min(100%, 520px);
+      margin: 0 auto;
+      padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+      display: flex;
+      gap: 6px;
+    }
+
+    .nav button {
+      flex: 1 1 0;
+      min-height: 56px;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .nav button[hidden] {
+      display: none;
+    }
+
+    .nav button span {
+      display: block;
+      font-size: 19px;
+      line-height: 1.05;
+      margin-bottom: 3px;
+    }
+
+    .nav button.active {
+      background: #e7f4da;
+      color: var(--green-dark);
+    }
+
+    .empty {
+      padding: 22px 12px;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 520px) {
+      .filter-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .filter-grid .btn {
+        grid-column: 1 / -1;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .mini-grid,
+      .quick {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="hero">
+      <div>
+        <div class="hero-top">
+          <div class="eyebrow">บ้านคำใหญ่ หมู่ที่ 11 | ปี 2569</div>
+          <button type="button" id="adminToggleBtn" class="admin-toggle" title="สำหรับผู้ดูแลระบบ">⚙</button>
+        </div>
+        <h1>3-2-1 คนคำใหญ่ไร้พุง</h1>
+      </div>
+      <p>ขยับกาย ต้านโรค NCDs ตำบลคำใหญ่ บันทึกน้ำหนัก รอบเอว ความดัน น้ำตาล และการออกกำลังกาย พร้อมค้นข้อมูลย้อนหลังทั้งหมดรายบุคคลด้วยเบอร์โทรศัพท์</p>
+    </section>
+
+    <section class="quick">
+      <div class="metric">
+        <span>ผู้เข้าร่วม</span>
+        <strong id="totalParticipants">0</strong>
+      </div>
+      <div class="metric">
+        <span>ออกกำลัง 3-5 วัน</span>
+        <strong id="exerciseTarget">0</strong>
+      </div>
+      <div class="metric">
+        <span>รายการบันทึก</span>
+        <strong id="totalRecords">0</strong>
+      </div>
+    </section>
+
+    <section id="tab-form" class="tab active">
+      <form id="recordForm" class="panel">
+        <div class="panel-title">
+          <div>
+            <h2>บันทึกสุขภาพ</h2>
+            <div class="muted">ข้อมูลจะถูกส่งไป Google Sheet ของโครงการ</div>
+          </div>
+        </div>
+
+        <div class="grid">
+          <div class="field">
+            <label for="fullName">ชื่อ-สกุล</label>
+            <input id="fullName" name="fullName" autocomplete="name" required placeholder="ชื่อผู้เข้าร่วม">
+          </div>
+          <div class="field">
+            <label for="age">อายุ</label>
+            <input id="age" name="age" type="number" min="1" max="120" inputmode="numeric">
+          </div>
+          <div class="field">
+            <label for="phone">เบอร์โทร</label>
+            <input id="phone" name="phone" inputmode="tel" autocomplete="tel" required maxlength="10" pattern="0[0-9]{9}" placeholder="เบอร์มือถือ 10 หลัก เช่น 0812345678">
+            <div class="muted" style="font-size:12px; margin-top:4px;">ใช้เป็นคีย์ค้นข้อมูลย้อนหลังรายบุคคล</div>
+          </div>
+          <div class="field full">
+            <label for="riskGroup">กลุ่มเป้าหมาย</label>
+            <select id="riskGroup" name="riskGroup">
+              <option value="กลุ่มเสี่ยง">กลุ่มเสี่ยง</option>
+              <option value="ผู้ป่วยเบาหวาน">ผู้ป่วยเบาหวาน</option>
+              <option value="ผู้ป่วยความดันโลหิตสูง">ผู้ป่วยความดันโลหิตสูง</option>
+              <option value="ประชาชนทั่วไป">ประชาชนทั่วไป</option>
+            </select>
+          </div>
+          <div class="field full">
+            <label for="village">หมู่บ้านที่อยู่อาศัย</label>
+            <select id="village" name="village" required>
+              <option value="">เลือกหมู่บ้าน</option>
+              <option value="หมู่ 1 บ้านหัวสนาม">หมู่ 1 บ้านหัวสนาม</option>
+              <option value="หมู่ 2 บ้านคำเจริญ">หมู่ 2 บ้านคำเจริญ</option>
+              <option value="หมู่ 3 บ้านชัยศรี">หมู่ 3 บ้านชัยศรี</option>
+              <option value="หมู่ 4 บ้านนาดี">หมู่ 4 บ้านนาดี</option>
+              <option value="หมู่ 5 บ้านห้วยยาง">หมู่ 5 บ้านห้วยยาง</option>
+              <option value="หมู่ 6 บ้านห้วยม่วง">หมู่ 6 บ้านห้วยม่วง</option>
+              <option value="หมู่ 7 บ้านคำใหญ่">หมู่ 7 บ้านคำใหญ่</option>
+              <option value="หมู่ 8 บ้านคำถาวร">หมู่ 8 บ้านคำถาวร</option>
+              <option value="หมู่ 9 บ้านโพธิ์ทอง">หมู่ 9 บ้านโพธิ์ทอง</option>
+              <option value="หมู่ 10 บ้านโคกป่ากุง">หมู่ 10 บ้านโคกป่ากุง</option>
+              <option value="หมู่ 11 บ้านคำใหญ่" selected>หมู่ 11 บ้านคำใหญ่</option>
+              <option value="หมู่ 12 บ้านคำเจริญ">หมู่ 12 บ้านคำเจริญ</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="heightCm">ส่วนสูง (ซม.)</label>
+            <input id="heightCm" name="heightCm" type="number" step="0.1" inputmode="decimal">
+          </div>
+          <div class="field">
+            <label for="weightKg">น้ำหนัก (กก.)</label>
+            <input id="weightKg" name="weightKg" type="number" step="0.1" inputmode="decimal" required>
+          </div>
+          <div class="field">
+            <label for="waistCm">รอบเอว (ซม.)</label>
+            <input id="waistCm" name="waistCm" type="number" step="0.1" inputmode="decimal" required>
+          </div>
+          <div class="field">
+            <label for="bloodSugar">น้ำตาล (mg/dL)</label>
+            <input id="bloodSugar" name="bloodSugar" type="number" step="1" inputmode="numeric" required>
+          </div>
+          <div class="field">
+            <label for="systolic">ความดันตัวบน</label>
+            <input id="systolic" name="systolic" type="number" inputmode="numeric" required>
+          </div>
+          <div class="field">
+            <label for="diastolic">ความดันตัวล่าง</label>
+            <input id="diastolic" name="diastolic" type="number" inputmode="numeric" required>
+          </div>
+          <div class="field">
+            <label for="exerciseDays">ออกกำลัง/สัปดาห์</label>
+            <input id="exerciseDays" name="exerciseDays" type="number" min="0" max="7" inputmode="numeric" required>
+          </div>
+          <div class="field">
+            <label for="exerciseMinutes">นาที/ครั้ง</label>
+            <input id="exerciseMinutes" name="exerciseMinutes" type="number" min="0" inputmode="numeric">
+          </div>
+          <div class="field full">
+            <label for="exerciseType">ประเภทการออกกำลังกาย</label>
+            <select id="exerciseType" name="exerciseType">
+              <option value="เดินเร็ว">เดินเร็ว</option>
+              <option value="แอโรบิก">แอโรบิก</option>
+              <option value="ปั่นจักรยาน">ปั่นจักรยาน</option>
+              <option value="ยืดเหยียด/กายบริหาร">ยืดเหยียด/กายบริหาร</option>
+              <option value="อื่น ๆ">อื่น ๆ</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="foodScore">อาหาร 3 อ.</label>
+            <select id="foodScore" name="foodScore">
+              <option value="3">ดีมาก</option>
+              <option value="2">พอใช้</option>
+              <option value="1">ต้องปรับ</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="moodScore">อารมณ์</label>
+            <select id="moodScore" name="moodScore">
+              <option value="3">ดี</option>
+              <option value="2">ปานกลาง</option>
+              <option value="1">เครียด</option>
+            </select>
+          </div>
+          <div class="field full">
+            <label for="note">หมายเหตุ</label>
+            <textarea id="note" name="note" placeholder="อาการ การปรับพฤติกรรม หรือข้อแนะนำ"></textarea>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn" type="submit">บันทึกข้อมูล</button>
+          <button class="btn secondary" type="button" id="loadBtn">ดึงย้อนหลัง</button>
+        </div>
+        <div id="formStatus" class="status"></div>
+      </form>
+
+      <section class="panel">
+        <div class="panel-title">
+          <h2>ผลประเมินล่าสุด</h2>
+        </div>
+        <div id="healthChips" class="chip-row">
+          <span class="chip">กรอกข้อมูลเพื่อประเมิน BMI</span>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-title">
+          <div>
+            <h2>เปรียบเทียบรายหมู่บ้าน</h2>
+            <div class="muted">จำนวนผู้เข้าร่วมและผู้ที่ออกกำลังกายได้ 3-5 วัน/สัปดาห์</div>
+          </div>
+        </div>
+        <div id="villageSummary" class="village-list">
+          <div class="empty">ยังไม่มีข้อมูลรายหมู่บ้าน</div>
+        </div>
+      </section>
+    </section>
+
+    <section id="tab-chart" class="tab">
+      <section class="panel">
+        <div class="panel-title">
+          <div>
+            <h2>กราฟแนวโน้ม</h2>
+            <div class="muted">กรองรายบุคคลด้วยเบอร์โทรศัพท์ และคำนวณเชิงงานวิจัย</div>
+          </div>
+        </div>
+        <div class="filter-grid">
+          <div class="field">
+            <label for="chartPhone">เบอร์โทร</label>
+            <input id="chartPhone" inputmode="tel" placeholder="เบอร์โทร">
+          </div>
+          <button class="btn" type="button" id="chartFilterBtn">กรองรายบุคคล</button>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="trendChart" width="640" height="420"></canvas>
+        </div>
+        <div class="chip-row" style="margin-top: 12px;">
+          <span class="chip">น้ำหนัก</span>
+          <span class="chip warn">รอบเอว</span>
+          <span class="chip">ความดันตัวบน</span>
+          <span class="chip danger">น้ำตาล</span>
+        </div>
+        <div id="chartStatus" class="status"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-title">
+          <div>
+            <h2>คำนวณเชิงงานวิจัย</h2>
+            <div class="muted">Baseline เทียบ Follow-up ล่าสุด พร้อมร้อยละการเปลี่ยนแปลงและแนวโน้มต่อครั้ง</div>
+          </div>
+        </div>
+        <div id="researchMetrics" class="history-list">
+          <div class="empty">กรอกเบอร์โทร แล้วกดกรองรายบุคคล</div>
+        </div>
+      </section>
+    </section>
+
+    <section id="tab-history" class="tab">
+      <section class="panel">
+        <div class="panel-title">
+          <div>
+            <h2>ข้อมูลย้อนหลังทั้งหมด</h2>
+            <div class="muted">กรอกเบอร์โทรในหน้าบันทึก แล้วกดดึงย้อนหลัง เพื่อดูข้อมูลเก่าทั้งหมดของรายบุคคล</div>
+          </div>
+        </div>
+        <div id="historyList" class="history-list">
+          <div class="empty">ยังไม่มีข้อมูลย้อนหลัง</div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-title">
+          <div>
+            <h2>เปรียบเทียบรายบุคคล</h2>
+            <div class="muted">เทียบค่าครั้งแรกกับครั้งล่าสุดด้วยคีย์เบอร์โทรศัพท์</div>
+          </div>
+        </div>
+        <div id="personalComparison">
+          <div class="empty">กรอกเบอร์โทร แล้วกดดึงย้อนหลัง</div>
+        </div>
+      </section>
+    </section>
+
+    <section id="tab-kpi" class="tab">
+      <section class="panel">
+        <div class="panel-title">
+          <div>
+            <h2>ตัวชี้วัดโครงการ</h2>
+            <div class="muted">ติดตามเป้าหมาย 3 อ. และลดความเสี่ยง NCDs</div>
+          </div>
+        </div>
+        <div class="history-list">
+          <div class="history-item">
+            <div class="history-head">
+              <strong>ออกกำลังกายสม่ำเสมอ 3-5 วัน/สัปดาห์</strong>
+              <span class="chip" id="kpiExercise">0 คน</span>
+            </div>
+            <div class="muted">ใช้ค่าจากบันทึกล่าสุดของแต่ละคน</div>
+          </div>
+          <div class="history-item">
+            <div class="history-head">
+              <strong>น้ำหนักลดลง</strong>
+              <span class="chip" id="kpiWeight">0 คน</span>
+            </div>
+            <div class="muted">เทียบครั้งแรกกับครั้งล่าสุด</div>
+          </div>
+          <div class="history-item">
+            <div class="history-head">
+              <strong>รอบเอวลดลง</strong>
+              <span class="chip" id="kpiWaist">0 คน</span>
+            </div>
+            <div class="muted">สนับสนุนเป้าหมายคนคำใหญ่ไร้พุง</div>
+          </div>
+          <div class="history-item">
+            <div class="history-head">
+              <strong>ความดัน/น้ำตาลมีแนวโน้มดีขึ้น</strong>
+              <span class="chip" id="kpiRisk">0 คน</span>
+            </div>
+            <div class="muted">รวมผู้ที่ค่าความดันหรือน้ำตาลลดลง</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-title">
+          <div>
+            <h2>รายบุคคลทั้งหมด</h2>
+            <div class="muted">สรุปผลเปลี่ยนแปลงของแต่ละคนจากครั้งแรกถึงครั้งล่าสุด</div>
+          </div>
+        </div>
+        <div id="personalSummary" class="history-list">
+          <div class="empty">ยังไม่มีข้อมูลรายบุคคล</div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <nav class="nav">
+    <div class="nav-inner">
+      <button class="active" type="button" data-tab="form"><span>＋</span>บันทึก</button>
+      <button type="button" data-tab="chart"><span>⌁</span>กราฟ</button>
+      <button type="button" data-tab="history"><span>▤</span>ย้อนหลัง</button>
+      <button type="button" id="navKpi" data-tab="kpi" hidden><span>◎</span>ตัวชี้วัด</button>
+    </div>
+  </nav>
+
+  <script>
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxbIpuGV_q4pH6PKG9sOQ5dgHl53Ay0Jk9GuOMv1M13lUOK04HoOYhN0jOidTHVc6P9/exec';
+    const form = document.getElementById('recordForm');
+    const statusEl = document.getElementById('formStatus');
+    const historyList = document.getElementById('historyList');
+    const chart = document.getElementById('trendChart');
+    const chartStatus = document.getElementById('chartStatus');
+    const storageKey = 'khamyai-321-records';
+    const adminKey = 'khamyai-321-admin-password';
+    let records = loadLocalRecords();
+    let currentPersonalComparison = makeComparisonFromRecords(records);
+    let isAdmin = false;
+    let adminPassword = sessionStorage.getItem(adminKey) || '';
+
+    document.querySelectorAll('.nav button').forEach((button) => {
+      button.addEventListener('click', () => switchTab(button.dataset.tab));
+    });
+
+    document.getElementById('adminToggleBtn').addEventListener('click', handleAdminToggle);
+
+    document.getElementById('loadBtn').addEventListener('click', () => {
+      loadRecords(true);
+    });
+
+    document.getElementById('chartFilterBtn').addEventListener('click', () => {
+      loadChartRecords();
+    });
+
+    ['heightCm', 'weightKg', 'waistCm', 'systolic', 'diastolic', 'bloodSugar', 'exerciseDays'].forEach((id) => {
+      document.getElementById(id).addEventListener('input', updateHealthChips);
+    });
+
+    function isValidThaiMobile(phone) {
+      const digits = String(phone || '').replace(/[^\d]/g, '');
+      return /^0\d{9}$/.test(digits);
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const record = getFormRecord();
+
+      if (!isValidThaiMobile(record.phone)) {
+        setStatus('เบอร์โทรศัพท์ไม่ถูกต้อง กรุณากรอกเบอร์มือถือ 10 หลัก ขึ้นต้นด้วย 0 เช่น 0812345678');
+        document.getElementById('phone').focus();
+        return;
+      }
+
+      setStatus('กำลังบันทึกข้อมูล...');
+
+      try {
+        const result = await apiCall('saveRecord', { record });
+        if (result && result.ok === false) {
+          setStatus(result.message || 'บันทึกข้อมูลไม่สำเร็จ');
+          return;
+        }
+        records = result.latest || [record, ...records].slice(0, 200);
+        currentPersonalComparison = result.personalComparison || makeComparisonFromRecords(records);
+        saveLocalRecords(records);
+        renderAll();
+        setStatus(result.message || 'บันทึกข้อมูลสำเร็จ');
+        form.querySelector('#note').value = '';
+        switchTab('history');
+      } catch (error) {
+        records = [record, ...records].slice(0, 200);
+        saveLocalRecords(records);
+        renderAll();
+        setStatus('บันทึกในเครื่องแล้ว แต่ยังส่งเข้า Google Sheet ไม่สำเร็จ');
+      }
+    });
+
+    renderAll();
+    loadSummary();
+
+    function switchTab(name) {
+      if (name === 'kpi' && !isAdmin) return;
+      document.querySelectorAll('.tab').forEach((tab) => tab.classList.remove('active'));
+      document.getElementById(`tab-${name}`).classList.add('active');
+      document.querySelectorAll('.nav button').forEach((button) => {
+        button.classList.toggle('active', button.dataset.tab === name);
+      });
+      if (name === 'chart') {
+        syncChartFilter();
+        drawChart(records);
+        renderResearchMetrics(records);
+      }
+    }
+
+    async function loadRecords(showMessage) {
+      const phone = document.getElementById('phone').value.trim();
+      if (!phone) {
+        setStatus('กรุณากรอกเบอร์โทรศัพท์ก่อนดึงข้อมูลย้อนหลัง');
+        return;
+      }
+
+      if (showMessage) setStatus('กำลังดึงข้อมูลย้อนหลัง...');
+
+      try {
+        const result = await apiCall('listRecords', { phone });
+        records = result.records || [];
+        currentPersonalComparison = result.personalComparison || makeComparisonFromRecords(records);
+        saveLocalRecords(records);
+        renderAll();
+        if (showMessage) setStatus(`พบข้อมูลย้อนหลังทั้งหมด ${records.length} ครั้ง`);
+        switchTab('history');
+      } catch (error) {
+        renderAll();
+        if (showMessage) setStatus('ดึงจาก Google Sheet ไม่สำเร็จ จะแสดงข้อมูลที่บันทึกไว้ในเครื่อง');
+      }
+    }
+
+    async function loadChartRecords() {
+      const phone = document.getElementById('chartPhone').value.trim();
+      if (!phone) {
+        setChartStatus('กรุณากรอกเบอร์โทรศัพท์เพื่อกรองรายบุคคล');
+        return;
+      }
+
+      setChartStatus('กำลังกรองข้อมูลรายบุคคล...');
+
+      try {
+        const result = await apiCall('listRecords', { phone });
+        records = result.records || [];
+        currentPersonalComparison = result.personalComparison || makeComparisonFromRecords(records);
+        saveLocalRecords(records);
+        renderHistory(records);
+        renderPersonalComparison(currentPersonalComparison || makeComparisonFromRecords(records));
+        drawChart(records);
+        renderResearchMetrics(records);
+        setChartStatus(`กรองแล้ว พบข้อมูลย้อนหลังทั้งหมด ${records.length} ครั้ง`);
+      } catch (error) {
+        const filtered = loadLocalRecords().filter((item) => getParticipantKey(item) === normalizePhone(phone));
+        records = filtered;
+        drawChart(records);
+        renderResearchMetrics(records);
+        setChartStatus('กรองจาก Google Sheet ไม่สำเร็จ จะแสดงข้อมูลที่มีในเครื่อง');
+      }
+    }
+
+    async function loadSummary() {
+      try {
+        const summary = await apiCall('summary', { password: adminPassword });
+        if (typeof summary.isAdmin === 'boolean') {
+          isAdmin = summary.isAdmin;
+          applyAdminVisibility(isAdmin);
+        }
+        renderSummary(summary);
+      } catch (error) {
+        renderSummary(makeLocalSummary());
+      }
+    }
+
+    async function handleAdminToggle() {
+      if (isAdmin) {
+        if (!confirm('ออกจากโหมดผู้ดูแลระบบ?')) return;
+        isAdmin = false;
+        adminPassword = '';
+        sessionStorage.removeItem(adminKey);
+        applyAdminVisibility(false);
+        setStatus('ออกจากโหมดผู้ดูแลระบบแล้ว');
+        return;
+      }
+
+      const input = prompt('กรอกรหัสผ่านผู้ดูแลระบบ เพื่อเปิดเมนูตัวชี้วัด');
+      if (input === null || input.trim() === '') return;
+
+      try {
+        const result = await apiCall('checkAdmin', { password: input.trim() });
+        if (result && result.ok) {
+          isAdmin = true;
+          adminPassword = input.trim();
+          sessionStorage.setItem(adminKey, adminPassword);
+          applyAdminVisibility(true);
+          setStatus('เข้าสู่โหมดผู้ดูแลระบบแล้ว');
+          loadSummary();
+        } else {
+          alert((result && result.message) || 'รหัสผ่านไม่ถูกต้อง');
+        }
+      } catch (error) {
+        alert('ตรวจสอบรหัสผ่านไม่สำเร็จ กรุณาลองใหม่อีกครั้ง');
+      }
+    }
+
+    function applyAdminVisibility(adminFlag) {
+      const kpiBtn = document.getElementById('navKpi');
+      const toggleBtn = document.getElementById('adminToggleBtn');
+      kpiBtn.hidden = !adminFlag;
+      toggleBtn.classList.toggle('is-admin', adminFlag);
+      if (!adminFlag && document.getElementById('tab-kpi').classList.contains('active')) {
+        switchTab('form');
+      }
+    }
+
+    function apiCall(action, payload) {
+      const body = { action, ...payload };
+      if (window.google && google.script && google.script.run) {
+        return new Promise((resolve, reject) => {
+          const runner = google.script.run.withSuccessHandler(resolve).withFailureHandler(reject);
+          if (action === 'saveRecord') runner.saveRecord(payload.record);
+          if (action === 'listRecords') runner.listRecords(payload.phone, payload.limit || null);
+          if (action === 'summary') runner.getSummary(payload.password || '');
+          if (action === 'checkAdmin') runner.checkAdmin(payload.password || '');
+        });
+      }
+
+      return fetch(SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify(body),
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+      }).then((response) => response.json());
+    }
+
+    function getFormRecord() {
+      const data = new FormData(form);
+      const record = Object.fromEntries(data.entries());
+      record.timestamp = new Date().toISOString();
+      return record;
+    }
+
+    function updateHealthChips() {
+      const record = getFormRecord();
+      const bmi = getBmi(record.heightCm, record.weightKg);
+      const chips = [];
+
+      if (bmi) chips.push({ text: `BMI ${bmi} ${getBmiStatus(bmi)}`, type: getBmiType(bmi) });
+      if (record.systolic && record.diastolic) chips.push({ text: `ความดัน ${record.systolic}/${record.diastolic} ${getBpStatus(record.systolic, record.diastolic)}`, type: getBpType(record.systolic, record.diastolic) });
+      if (record.bloodSugar) chips.push({ text: `น้ำตาล ${record.bloodSugar} ${getSugarStatus(record.bloodSugar)}`, type: getSugarType(record.bloodSugar) });
+      if (record.exerciseDays) chips.push({ text: `ออกกำลัง ${record.exerciseDays} วัน/สัปดาห์`, type: Number(record.exerciseDays) >= 3 && Number(record.exerciseDays) <= 5 ? '' : 'warn' });
+
+      document.getElementById('healthChips').innerHTML = chips.length
+        ? chips.map((chip) => `<span class="chip ${chip.type}">${chip.text}</span>`).join('')
+        : '<span class="chip">กรอกข้อมูลเพื่อประเมิน BMI</span>';
+    }
+
+    function renderAll() {
+      updateHealthChips();
+      renderHistory(records);
+      renderPersonalComparison(currentPersonalComparison || makeComparisonFromRecords(records));
+      drawChart(records);
+      renderResearchMetrics(records);
+      loadSummary();
+    }
+
+    function renderHistory(items) {
+      if (!items.length) {
+        historyList.innerHTML = '<div class="empty">ยังไม่มีข้อมูลย้อนหลัง</div>';
+        return;
+      }
+
+      historyList.innerHTML = items.map((item, index) => {
+        const date = item.timestamp ? new Date(item.timestamp).toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: 'numeric' }) : '-';
+        return `
+          <article class="history-item">
+            <div class="history-head">
+              <strong>ครั้งที่ ${items.length - index} | ${date}</strong>
+              <span class="chip">${item.exerciseDays || 0} วัน/สัปดาห์</span>
+            </div>
+            <div class="mini-grid">
+              <div class="mini"><span>น้ำหนัก</span><b>${value(item.weightKg)} กก.</b></div>
+              <div class="mini"><span>รอบเอว</span><b>${value(item.waistCm)} ซม.</b></div>
+              <div class="mini"><span>ความดัน</span><b>${value(item.systolic)}/${value(item.diastolic)}</b></div>
+              <div class="mini"><span>น้ำตาล</span><b>${value(item.bloodSugar)}</b></div>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    function drawChart(items) {
+      const ctx = chart.getContext('2d');
+      const width = chart.width;
+      const height = chart.height;
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, width, height);
+
+      if (!items.length) {
+        ctx.fillStyle = '#66736d';
+        ctx.font = '24px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('ยังไม่มีข้อมูลสำหรับกราฟ', width / 2, height / 2);
+        return;
+      }
+
+      const ordered = [...items].reverse();
+      const series = [
+        { key: 'weightKg', color: '#0f8f5f' },
+        { key: 'waistCm', color: '#b87511' },
+        { key: 'systolic', color: '#2477b9' },
+        { key: 'bloodSugar', color: '#c33d3d' }
+      ];
+      const allValues = series.flatMap((serie) => ordered.map((item) => Number(item[serie.key])).filter(Boolean));
+      const min = Math.min(...allValues) - 5;
+      const max = Math.max(...allValues) + 5;
+      const left = 48;
+      const top = 24;
+      const right = 22;
+      const bottom = 46;
+      const plotW = width - left - right;
+      const plotH = height - top - bottom;
+
+      ctx.strokeStyle = '#dce7df';
+      ctx.lineWidth = 1;
+      ctx.font = '18px sans-serif';
+      ctx.fillStyle = '#66736d';
+      ctx.textAlign = 'right';
+
+      for (let i = 0; i <= 4; i++) {
+        const y = top + (plotH / 4) * i;
+        ctx.beginPath();
+        ctx.moveTo(left, y);
+        ctx.lineTo(width - right, y);
+        ctx.stroke();
+        ctx.fillText(Math.round(max - ((max - min) / 4) * i), left - 8, y + 6);
+      }
+
+      series.forEach((serie) => {
+        const points = ordered.map((item, index) => {
+          const value = Number(item[serie.key]);
+          if (!value) return null;
+          return {
+            x: left + (ordered.length === 1 ? plotW / 2 : (plotW / (ordered.length - 1)) * index),
+            y: top + plotH - ((value - min) / (max - min)) * plotH
+          };
+        });
+
+        ctx.strokeStyle = serie.color;
+        ctx.fillStyle = serie.color;
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        points.forEach((point) => {
+          if (!point) return;
+          if (!ctx.currentPoint) {
+            ctx.moveTo(point.x, point.y);
+            ctx.currentPoint = true;
+          } else {
+            ctx.lineTo(point.x, point.y);
+          }
+        });
+        ctx.stroke();
+        ctx.currentPoint = false;
+
+        points.forEach((point) => {
+          if (!point) return;
+          ctx.beginPath();
+          ctx.arc(point.x, point.y, 5, 0, Math.PI * 2);
+          ctx.fill();
+        });
+      });
+
+      ctx.fillStyle = '#66736d';
+      ctx.textAlign = 'center';
+      ordered.forEach((item, index) => {
+        const x = left + (ordered.length === 1 ? plotW / 2 : (plotW / (ordered.length - 1)) * index);
+        ctx.fillText(String(index + 1), x, height - 16);
+      });
+    }
+
+    function renderResearchMetrics(items) {
+      const container = document.getElementById('researchMetrics');
+      if (!items || items.length < 2) {
+        container.innerHTML = '<div class="empty">ต้องมีข้อมูลอย่างน้อย 2 ครั้ง เพื่อคำนวณก่อน-หลังและแนวโน้ม</div>';
+        return;
+      }
+
+      const ordered = [...items].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+      const metrics = [
+        researchMetric(ordered, 'weightKg', 'น้ำหนัก', 'กก.'),
+        researchMetric(ordered, 'waistCm', 'รอบเอว', 'ซม.'),
+        researchMetric(ordered, 'systolic', 'ความดันตัวบน', 'mmHg'),
+        researchMetric(ordered, 'diastolic', 'ความดันตัวล่าง', 'mmHg'),
+        researchMetric(ordered, 'bloodSugar', 'น้ำตาลในเลือด', 'mg/dL'),
+        researchMetric(ordered, 'exerciseDays', 'ออกกำลังกาย', 'วัน/สัปดาห์')
+      ];
+
+      const firstDate = new Date(ordered[0].timestamp).toLocaleDateString('th-TH');
+      const lastDate = new Date(ordered[ordered.length - 1].timestamp).toLocaleDateString('th-TH');
+
+      container.innerHTML = `
+        <div class="history-item">
+          <div class="history-head">
+            <strong>ข้อมูลที่ใช้วิเคราะห์ ${ordered.length} ครั้ง</strong>
+            <span class="chip">${firstDate} ถึง ${lastDate}</span>
+          </div>
+          <div class="muted">Δ = Follow-up ล่าสุด - Baseline | %Δ = Δ / Baseline x 100 | แนวโน้ม = ค่าเฉลี่ยการเปลี่ยนแปลงต่อครั้ง</div>
+        </div>
+        ${metrics.map(renderResearchMetric).join('')}
+      `;
+    }
+
+    function researchMetric(items, key, label, unit) {
+      const values = items
+        .map((item, index) => ({ index, value: Number(item[key]) }))
+        .filter((item) => !Number.isNaN(item.value) && item.value !== 0);
+      if (values.length < 2) {
+        return { label, unit, insufficient: true };
+      }
+
+      const baseline = values[0].value;
+      const followup = values[values.length - 1].value;
+      const change = Math.round((followup - baseline) * 10) / 10;
+      const percent = baseline ? Math.round(((change / baseline) * 100) * 10) / 10 : '';
+      const slope = values.length > 1 ? Math.round((change / (values.length - 1)) * 10) / 10 : '';
+      const direction = change < 0 ? 'ลดลง' : change > 0 ? 'เพิ่มขึ้น' : 'คงที่';
+
+      return {
+        label,
+        unit,
+        baseline,
+        followup,
+        change,
+        percent,
+        slope,
+        n: values.length,
+        direction,
+        insufficient: false
+      };
+    }
+
+    function renderResearchMetric(metric) {
+      if (metric.insufficient) {
+        return `
+          <article class="history-item">
+            <div class="history-head">
+              <strong>${metric.label}</strong>
+              <span class="chip warn">ข้อมูลไม่พอ</span>
+            </div>
+            <div class="muted">ต้องมีข้อมูลอย่างน้อย 2 ครั้ง</div>
+          </article>
+        `;
+      }
+
+      const changeClass = metric.change > 0 ? 'danger' : metric.change < 0 ? '' : 'warn';
+      return `
+        <article class="history-item">
+          <div class="history-head">
+            <strong>${metric.label}</strong>
+            <span class="chip ${changeClass}">${metric.direction}</span>
+          </div>
+          <div class="mini-grid">
+            <div class="mini"><span>Baseline</span><b>${metric.baseline} ${metric.unit}</b></div>
+            <div class="mini"><span>ล่าสุด</span><b>${metric.followup} ${metric.unit}</b></div>
+            <div class="mini"><span>Δ ก่อน-หลัง</span><b>${formatChange(metric.change)}</b></div>
+            <div class="mini"><span>%Δ</span><b>${metric.percent === '' ? '-' : formatChange(metric.percent) + '%'}</b></div>
+          </div>
+          <div class="muted" style="margin-top: 8px;">แนวโน้มต่อครั้ง ${formatChange(metric.slope)} ${metric.unit} | n=${metric.n}</div>
+        </article>
+      `;
+    }
+
+    function renderSummary(summary) {
+      document.getElementById('totalParticipants').textContent = summary.totalParticipants || 0;
+      document.getElementById('exerciseTarget').textContent = summary.exerciseTarget || 0;
+      document.getElementById('totalRecords').textContent = summary.totalRecords || 0;
+      document.getElementById('kpiExercise').textContent = `${summary.exerciseTarget || 0} คน`;
+      document.getElementById('kpiWeight').textContent = `${summary.improvedWeight || 0} คน`;
+      document.getElementById('kpiWaist').textContent = `${summary.improvedWaist || 0} คน`;
+      document.getElementById('kpiRisk').textContent = `${(summary.improvedBp || 0) + (summary.improvedSugar || 0)} คน`;
+      renderVillageSummary(summary.villageSummary || []);
+      renderPersonalSummary(summary.personalSummary || []);
+    }
+
+    function renderPersonalComparison(item) {
+      const container = document.getElementById('personalComparison');
+      if (!item) {
+        container.innerHTML = '<div class="empty">ยังไม่มีข้อมูลพอสำหรับเปรียบเทียบรายบุคคล</div>';
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="history-item">
+          <div class="history-head">
+            <strong>${item.fullName || item.participantId || 'ผู้เข้าร่วม'}</strong>
+            <span class="chip">${item.recordCount || 0} ครั้ง</span>
+          </div>
+          <div class="muted">${item.village || '-'} | โทร ${item.phone || '-'} | รหัส ${item.participantId || '-'}</div>
+          <div class="comparison-grid" style="margin-top: 10px;">
+            ${comparisonCard('น้ำหนัก', item.lastWeightKg, 'กก.', item.weightChange)}
+            ${comparisonCard('รอบเอว', item.lastWaistCm, 'ซม.', item.waistChange)}
+            ${comparisonCard('น้ำตาล', item.lastBloodSugar, 'mg/dL', item.sugarChange)}
+            ${comparisonCard('ความดัน', item.lastBp || '-', '', item.bpChange)}
+          </div>
+        </div>
+      `;
+    }
+
+    function comparisonCard(label, latest, unit, change) {
+      const hasChange = change !== '' && change !== undefined && change !== null;
+      const changeText = hasChange ? `${Number(change) > 0 ? '+' : ''}${change}` : 'ยังเทียบไม่ได้';
+      const changeClass = Number(change) > 0 ? 'danger' : Number(change) < 0 ? '' : 'warn';
+      return `
+        <div class="comparison-card">
+          <span>${label}ล่าสุด</span>
+          <strong>${value(latest)} ${unit}</strong>
+          <small><span class="chip ${changeClass}">เปลี่ยน ${changeText}</span></small>
+        </div>
+      `;
+    }
+
+    function renderVillageSummary(items) {
+      const container = document.getElementById('villageSummary');
+      const activeItems = items.filter((item) => Number(item.participants) > 0);
+      const visibleItems = activeItems.length ? activeItems : items;
+
+      if (!visibleItems.length) {
+        container.innerHTML = '<div class="empty">ยังไม่มีข้อมูลรายหมู่บ้าน</div>';
+        return;
+      }
+
+      container.innerHTML = visibleItems.map((item) => {
+        const participants = Number(item.participants || 0);
+        const exerciseTarget = Number(item.exerciseTarget || 0);
+        const percent = participants ? Math.round((exerciseTarget / participants) * 100) : 0;
+        return `
+          <div class="village-row">
+            <div>
+              <strong>${item.village}</strong>
+              <div class="muted">ผู้เข้าร่วม ${participants} คน | ตามเป้าหมาย ${exerciseTarget} คน</div>
+              <div class="village-bars">
+                <div class="bar"><span style="width: ${percent}%"></span></div>
+              </div>
+            </div>
+            <span class="chip">${percent}%</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderPersonalSummary(items) {
+      const container = document.getElementById('personalSummary');
+      if (!items.length) {
+        container.innerHTML = '<div class="empty">ยังไม่มีข้อมูลรายบุคคล</div>';
+        return;
+      }
+
+      container.innerHTML = items.slice(0, 30).map((item) => `
+        <article class="history-item">
+          <div class="history-head">
+            <strong>${item.fullName || item.participantId || '-'}</strong>
+            <span class="chip">${item.recordCount || 0} ครั้ง</span>
+          </div>
+          <div class="muted">${item.village || '-'} | โทร ${item.phone || '-'} | รหัส ${item.participantId || '-'}</div>
+          <div class="mini-grid" style="margin-top: 8px;">
+            <div class="mini"><span>น้ำหนัก</span><b>${formatChange(item.weightChange)}</b></div>
+            <div class="mini"><span>รอบเอว</span><b>${formatChange(item.waistChange)}</b></div>
+            <div class="mini"><span>น้ำตาล</span><b>${formatChange(item.sugarChange)}</b></div>
+            <div class="mini"><span>ออกกำลัง</span><b>${item.lastExerciseDays || 0} วัน</b></div>
+          </div>
+        </article>
+      `).join('');
+    }
+
+    function makeLocalSummary() {
+      const villageMap = {};
+      const personMap = {};
+      records.forEach((item) => {
+        const village = item.village || 'ไม่ระบุหมู่บ้าน';
+        if (!villageMap[village]) {
+          villageMap[village] = {
+            village,
+            participants: 0,
+            exerciseTarget: 0,
+            improvedWeight: 0,
+            improvedWaist: 0,
+            improvedBp: 0,
+            improvedSugar: 0
+          };
+        }
+        villageMap[village].participants += 1;
+        if (Number(item.exerciseDays) >= 3 && Number(item.exerciseDays) <= 5) {
+          villageMap[village].exerciseTarget += 1;
+        }
+        const key = getParticipantKey(item);
+        if (!personMap[key]) personMap[key] = [];
+        personMap[key].push(item);
+      });
+      const personalSummary = Object.values(personMap).map(makeComparisonFromRecords).filter(Boolean);
+
+      return {
+        totalRecords: records.length,
+        totalParticipants: new Set(records.map(getParticipantKey).filter(Boolean)).size,
+        exerciseTarget: records.filter((item) => Number(item.exerciseDays) >= 3 && Number(item.exerciseDays) <= 5).length,
+        improvedWeight: 0,
+        improvedWaist: 0,
+        improvedBp: 0,
+        improvedSugar: 0,
+        villageSummary: Object.values(villageMap),
+        personalSummary
+      };
+    }
+
+    function makeComparisonFromRecords(items) {
+      if (!items || !items.length) return null;
+      const ordered = [...items].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+      const first = ordered[0];
+      const last = ordered[ordered.length - 1];
+      const firstBpAvg = Number(first.systolic) && Number(first.diastolic) ? (Number(first.systolic) + Number(first.diastolic)) / 2 : '';
+      const lastBpAvg = Number(last.systolic) && Number(last.diastolic) ? (Number(last.systolic) + Number(last.diastolic)) / 2 : '';
+
+      return {
+        participantKey: getParticipantKey(last),
+        participantId: last.participantId,
+        phone: normalizePhone(last.phone),
+        fullName: last.fullName,
+        village: last.village,
+        recordCount: ordered.length,
+        firstDate: first.timestamp,
+        lastDate: last.timestamp,
+        firstWeightKg: first.weightKg,
+        lastWeightKg: last.weightKg,
+        weightChange: diff(last.weightKg, first.weightKg),
+        firstWaistCm: first.waistCm,
+        lastWaistCm: last.waistCm,
+        waistChange: diff(last.waistCm, first.waistCm),
+        firstBloodSugar: first.bloodSugar,
+        lastBloodSugar: last.bloodSugar,
+        sugarChange: diff(last.bloodSugar, first.bloodSugar),
+        firstBp: first.systolic && first.diastolic ? `${first.systolic}/${first.diastolic}` : '',
+        lastBp: last.systolic && last.diastolic ? `${last.systolic}/${last.diastolic}` : '',
+        bpChange: firstBpAvg && lastBpAvg ? Math.round((lastBpAvg - firstBpAvg) * 10) / 10 : '',
+        lastExerciseDays: last.exerciseDays,
+        exerciseTarget: Number(last.exerciseDays) >= 3 && Number(last.exerciseDays) <= 5
+      };
+    }
+
+    function getParticipantKey(item) {
+      return normalizePhone(item.phone) || item.participantKey || '';
+    }
+
+    function normalizePhone(phone) {
+      return String(phone || '').replace(/[^\d]/g, '');
+    }
+
+    function diff(latest, first) {
+      if (latest === '' || latest === undefined || first === '' || first === undefined) return '';
+      const result = Number(latest) - Number(first);
+      return Number.isNaN(result) ? '' : Math.round(result * 10) / 10;
+    }
+
+    function formatChange(change) {
+      if (change === '' || change === undefined || change === null) return '-';
+      return `${Number(change) > 0 ? '+' : ''}${change}`;
+    }
+
+    function getBmi(heightCm, weightKg) {
+      const h = Number(heightCm);
+      const w = Number(weightKg);
+      if (!h || !w) return '';
+      return Math.round((w / Math.pow(h / 100, 2)) * 10) / 10;
+    }
+
+    function getBmiStatus(bmi) {
+      if (bmi < 18.5) return 'น้ำหนักน้อย';
+      if (bmi < 23) return 'ปกติ';
+      if (bmi < 25) return 'ท้วม';
+      if (bmi < 30) return 'อ้วนระดับ 1';
+      return 'อ้วนระดับ 2';
+    }
+
+    function getBmiType(bmi) {
+      if (bmi >= 25) return 'danger';
+      if (bmi >= 23 || bmi < 18.5) return 'warn';
+      return '';
+    }
+
+    function getBpStatus(systolic, diastolic) {
+      const s = Number(systolic);
+      const d = Number(diastolic);
+      if (s < 120 && d < 80) return 'ปกติ';
+      if (s < 140 || d < 90) return 'เริ่มสูง';
+      return 'สูง';
+    }
+
+    function getBpType(systolic, diastolic) {
+      const s = Number(systolic);
+      const d = Number(diastolic);
+      if (s >= 140 || d >= 90) return 'danger';
+      if (s >= 120 || d >= 80) return 'warn';
+      return '';
+    }
+
+    function getSugarStatus(sugar) {
+      const value = Number(sugar);
+      if (value < 100) return 'ปกติ';
+      if (value < 126) return 'เสี่ยง';
+      return 'สูง';
+    }
+
+    function getSugarType(sugar) {
+      const value = Number(sugar);
+      if (value >= 126) return 'danger';
+      if (value >= 100) return 'warn';
+      return '';
+    }
+
+    function value(input) {
+      return input === undefined || input === '' ? '-' : input;
+    }
+
+    function setStatus(message) {
+      statusEl.textContent = message;
+    }
+
+    function setChartStatus(message) {
+      chartStatus.textContent = message;
+    }
+
+    function syncChartFilter() {
+      const mainPhone = document.getElementById('phone').value.trim();
+      const chartPhone = document.getElementById('chartPhone');
+
+      if (mainPhone && !chartPhone.value) chartPhone.value = mainPhone;
+    }
+
+    function loadLocalRecords() {
+      try {
+        return JSON.parse(localStorage.getItem(storageKey) || '[]');
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function saveLocalRecords(items) {
+      localStorage.setItem(storageKey, JSON.stringify(items.slice(0, 200)));
+    }
+  </script>
+</body>
+</html>
