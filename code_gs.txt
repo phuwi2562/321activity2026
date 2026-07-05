@@ -1,0 +1,650 @@
+const SPREADSHEET_ID = '1WycmYmxR7qzIWShKZndKp5dh570DrzoB9BjpOHpECG4';
+const SHEET_NAME = 'records';
+
+const VILLAGES = [
+  'หมู่ 1 บ้านหัวสนาม',
+  'หมู่ 2 บ้านคำเจริญ',
+  'หมู่ 3 บ้านชัยศรี',
+  'หมู่ 4 บ้านนาดี',
+  'หมู่ 5 บ้านห้วยยาง',
+  'หมู่ 6 บ้านห้วยม่วง',
+  'หมู่ 7 บ้านคำใหญ่',
+  'หมู่ 8 บ้านคำถาวร',
+  'หมู่ 9 บ้านโพธิ์ทอง',
+  'หมู่ 10 บ้านโคกป่ากุง',
+  'หมู่ 11 บ้านคำใหญ่',
+  'หมู่ 12 บ้านคำเจริญ'
+];
+
+const HEADERS = [
+  'timestamp',
+  'participantId',
+  'fullName',
+  'village',
+  'age',
+  'phone',
+  'riskGroup',
+  'heightCm',
+  'weightKg',
+  'waistCm',
+  'systolic',
+  'diastolic',
+  'bloodSugar',
+  'exerciseDays',
+  'exerciseType',
+  'exerciseMinutes',
+  'moodScore',
+  'foodScore',
+  'note',
+  'bmi',
+  'bmiStatus',
+  'bpStatus',
+  'sugarStatus',
+  'createdAt',
+  'participantKey'
+];
+
+function doGet() {
+  return HtmlService.createTemplateFromFile('Index')
+    .evaluate()
+    .setTitle('3-2-1 คนคำใหญ่ไร้พุง')
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1, maximum-scale=1')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+function doPost(e) {
+  const payload = parsePayload_(e);
+  const action = payload.action || 'saveRecord';
+
+  if (action === 'listRecords') {
+    return json_(listRecords(payload.phone || '', payload.limit ? Number(payload.limit) : null));
+  }
+
+  if (action === 'summary') {
+    return json_(getSummary(payload.password || ''));
+  }
+
+  if (action === 'checkAdmin') {
+    return json_(checkAdmin(payload.password || ''));
+  }
+
+  return json_(saveRecord(payload.record || payload));
+}
+
+function checkAdmin(password) {
+  const adminPassword = PropertiesService.getScriptProperties().getProperty('ADMIN_PASSWORD');
+
+  if (!adminPassword) {
+    return { ok: false, message: 'ยังไม่ได้ตั้งค่ารหัสผ่านผู้ดูแลระบบ (ADMIN_PASSWORD) ใน Script Properties' };
+  }
+
+  if (clean_(password) === adminPassword) {
+    return { ok: true };
+  }
+
+  return { ok: false, message: 'รหัสผ่านไม่ถูกต้อง' };
+}
+
+function saveRecord(record) {
+  const sheet = getSheet_();
+  const now = new Date();
+  const normalized = normalizeRecord_(record, now);
+
+  if (!normalized.phone || !normalized.fullName || !normalized.village) {
+    return {
+      ok: false,
+      message: 'กรุณากรอกเบอร์โทรศัพท์ ชื่อ-สกุล และหมู่บ้าน เพื่อผูกข้อมูลรายบุคคล'
+    };
+  }
+
+  const phoneValidation = validatePhone_(normalized.phone);
+  if (!phoneValidation.ok) {
+    return phoneValidation;
+  }
+
+  const ownershipCheck = checkPhoneOwnership_(normalized.participantKey, normalized.fullName);
+  if (!ownershipCheck.ok) {
+    return ownershipCheck;
+  }
+
+  const row = HEADERS.map(function(header) {
+    return normalized[header] === undefined ? '' : normalized[header];
+  });
+
+  sheet.appendRow(row);
+  const personalComparison = getPersonalComparison_(normalized.participantKey);
+  const lineResult = sendLineRecordNotification_(normalized, personalComparison);
+
+  return {
+    ok: true,
+    message: 'บันทึกข้อมูลสำเร็จ',
+    record: normalized,
+    latest: listRecords(normalized.phone, null).records,
+    personalComparison: personalComparison,
+    lineNotification: lineResult
+  };
+}
+
+function listRecords(phone, limit) {
+  const sheet = getSheet_();
+  const values = sheet.getDataRange().getValues();
+  if (values.length <= 1) {
+    return { ok: true, records: [], personalComparison: null };
+  }
+
+  const headers = values[0];
+  let records = values.slice(1).map(function(row) {
+    const item = {};
+    headers.forEach(function(header, index) {
+      item[header] = row[index];
+    });
+    return item;
+  });
+
+  const participantKey = makeParticipantKey_(phone);
+
+  if (participantKey) {
+    records = records.filter(function(item) {
+      return getRecordParticipantKey_(item) === participantKey;
+    });
+  }
+
+  records.sort(function(a, b) {
+    return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+  });
+
+  // ค้นด้วยเบอร์โทร (มี participantKey) ให้แสดงข้อมูลย้อนหลังทั้งหมดของคนนั้น
+  // เว้นแต่ผู้เรียกระบุ limit มาชัดเจน ส่วนกรณีไม่ระบุเบอร์โทรยังคงจำกัดที่ 10 รายการล่าสุด
+  const effectiveLimit = limit && Number(limit) > 0
+    ? Number(limit)
+    : (participantKey ? records.length : 10);
+
+  return {
+    ok: true,
+    records: records.slice(0, effectiveLimit),
+    personalComparison: participantKey ? getPersonalComparison_(participantKey) : null
+  };
+}
+
+function getSummary(password) {
+  const isAdmin = checkAdmin(password || '').ok === true;
+  const sheet = getSheet_();
+  const values = sheet.getDataRange().getValues();
+  if (values.length <= 1) {
+    return {
+      ok: true,
+      isAdmin: isAdmin,
+      totalRecords: 0,
+      totalParticipants: 0,
+      exerciseTarget: 0,
+      improvedWeight: 0,
+      improvedWaist: 0,
+      improvedBp: 0,
+      improvedSugar: 0,
+      villageSummary: makeEmptyVillageSummary_(),
+      personalSummary: []
+    };
+  }
+
+  const headers = values[0];
+  const records = values.slice(1).map(function(row) {
+    const item = {};
+    headers.forEach(function(header, index) {
+      item[header] = row[index];
+    });
+    return item;
+  });
+
+  const byPerson = {};
+  records.forEach(function(record) {
+    const key = getRecordParticipantKey_(record);
+    if (!key) return;
+    if (!byPerson[key]) byPerson[key] = [];
+    byPerson[key].push(record);
+  });
+
+  let exerciseTarget = 0;
+  let improvedWeight = 0;
+  let improvedWaist = 0;
+  let improvedBp = 0;
+  let improvedSugar = 0;
+  const personalSummary = [];
+  const villageSummaryMap = {};
+
+  VILLAGES.forEach(function(village) {
+    villageSummaryMap[village] = {
+      village: village,
+      participants: 0,
+      exerciseTarget: 0,
+      improvedWeight: 0,
+      improvedWaist: 0,
+      improvedBp: 0,
+      improvedSugar: 0
+    };
+  });
+
+  Object.keys(byPerson).forEach(function(key) {
+    const personRecords = byPerson[key].sort(function(a, b) {
+      return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
+    });
+    const first = personRecords[0];
+    const last = personRecords[personRecords.length - 1];
+    const comparison = makeComparison_(first, last, personRecords.length);
+    personalSummary.push(comparison);
+    const village = clean_(last.village || first.village || 'ไม่ระบุหมู่บ้าน');
+    const villageItem = villageSummaryMap[village] || (villageSummaryMap[village] = {
+      village: village,
+      participants: 0,
+      exerciseTarget: 0,
+      improvedWeight: 0,
+      improvedWaist: 0,
+      improvedBp: 0,
+      improvedSugar: 0
+    });
+    villageItem.participants++;
+
+    if (Number(last.exerciseDays) >= 3 && Number(last.exerciseDays) <= 5) {
+      exerciseTarget++;
+      villageItem.exerciseTarget++;
+    }
+    if (Number(last.weightKg) < Number(first.weightKg)) {
+      improvedWeight++;
+      villageItem.improvedWeight++;
+    }
+    if (Number(last.waistCm) < Number(first.waistCm)) {
+      improvedWaist++;
+      villageItem.improvedWaist++;
+    }
+    if (Number(last.systolic) < Number(first.systolic) || Number(last.diastolic) < Number(first.diastolic)) {
+      improvedBp++;
+      villageItem.improvedBp++;
+    }
+    if (Number(last.bloodSugar) < Number(first.bloodSugar)) {
+      improvedSugar++;
+      villageItem.improvedSugar++;
+    }
+  });
+
+  return {
+    ok: true,
+    isAdmin: isAdmin,
+    totalRecords: records.length,
+    totalParticipants: Object.keys(byPerson).length,
+    exerciseTarget: exerciseTarget,
+    improvedWeight: improvedWeight,
+    improvedWaist: improvedWaist,
+    improvedBp: improvedBp,
+    improvedSugar: improvedSugar,
+    villageSummary: Object.keys(villageSummaryMap).map(function(key) {
+      return villageSummaryMap[key];
+    }),
+    personalSummary: isAdmin ? personalSummary.sort(function(a, b) {
+      return new Date(b.lastDate).getTime() - new Date(a.lastDate).getTime();
+    }) : []
+  };
+}
+
+function setupSheet() {
+  getSheet_();
+  return 'พร้อมใช้งาน';
+}
+
+function getSheet_() {
+  const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+  let sheet = spreadsheet.getSheetByName(SHEET_NAME);
+
+  if (!sheet) {
+    sheet = spreadsheet.insertSheet(SHEET_NAME);
+  }
+
+  const firstRow = sheet.getRange(1, 1, 1, HEADERS.length).getValues()[0];
+  const needsHeaders = firstRow.every(function(value) {
+    return value === '';
+  });
+  const hasExpectedHeaders = HEADERS.every(function(header, index) {
+    return firstRow[index] === header;
+  });
+  const looksLikeOldHeaders = firstRow.indexOf('timestamp') !== -1 && firstRow.indexOf('participantId') !== -1;
+
+  if (needsHeaders) {
+    sheet.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]);
+    sheet.setFrozenRows(1);
+  } else if (looksLikeOldHeaders) {
+    sheet.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]);
+    sheet.setFrozenRows(1);
+  } else if (!hasExpectedHeaders) {
+    sheet.insertRowBefore(1);
+    sheet.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]);
+    sheet.setFrozenRows(1);
+  }
+
+  applyTextFormats_(sheet);
+  return sheet;
+}
+
+function normalizeRecord_(record, now) {
+  const heightCm = Number(record.heightCm || 0);
+  const weightKg = Number(record.weightKg || 0);
+  const bmi = heightCm > 0 && weightKg > 0 ? round_(weightKg / Math.pow(heightCm / 100, 2), 1) : '';
+  const systolic = Number(record.systolic || 0);
+  const diastolic = Number(record.diastolic || 0);
+  const sugar = Number(record.bloodSugar || 0);
+  const participantId = clean_(record.participantId);
+  const phone = normalizePhone_(record.phone);
+  const participantKey = makeParticipantKey_(phone);
+
+  return {
+    timestamp: record.timestamp || now.toISOString(),
+    participantId: participantId,
+    fullName: clean_(record.fullName),
+    village: clean_(record.village || 'หมู่ 11 บ้านคำใหญ่'),
+    age: numberOrBlank_(record.age),
+    phone: phone,
+    riskGroup: clean_(record.riskGroup),
+    heightCm: numberOrBlank_(record.heightCm),
+    weightKg: numberOrBlank_(record.weightKg),
+    waistCm: numberOrBlank_(record.waistCm),
+    systolic: numberOrBlank_(record.systolic),
+    diastolic: numberOrBlank_(record.diastolic),
+    bloodSugar: numberOrBlank_(record.bloodSugar),
+    exerciseDays: numberOrBlank_(record.exerciseDays),
+    exerciseType: clean_(record.exerciseType),
+    exerciseMinutes: numberOrBlank_(record.exerciseMinutes),
+    moodScore: numberOrBlank_(record.moodScore),
+    foodScore: numberOrBlank_(record.foodScore),
+    note: clean_(record.note),
+    bmi: bmi,
+    bmiStatus: getBmiStatus_(bmi),
+    bpStatus: getBpStatus_(systolic, diastolic),
+    sugarStatus: getSugarStatus_(sugar),
+    createdAt: now,
+    participantKey: participantKey
+  };
+}
+
+function parsePayload_(e) {
+  if (!e || !e.postData || !e.postData.contents) return {};
+  try {
+    return JSON.parse(e.postData.contents);
+  } catch (error) {
+    return e.parameter || {};
+  }
+}
+
+function json_(data) {
+  return ContentService
+    .createTextOutput(JSON.stringify(data))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function clean_(value) {
+  return String(value || '').trim();
+}
+
+function normalizePhone_(value) {
+  return clean_(value).replace(/[^\d]/g, '');
+}
+
+function validatePhone_(phone) {
+  if (!/^0\d{9}$/.test(phone)) {
+    return {
+      ok: false,
+      message: 'เบอร์โทรศัพท์ไม่ถูกต้อง กรุณากรอกเบอร์มือถือ 10 หลัก ขึ้นต้นด้วย 0 เช่น 0812345678'
+    };
+  }
+  return { ok: true };
+}
+
+function normalizeName_(name) {
+  return clean_(name).replace(/\s+/g, '').toLowerCase();
+}
+
+function checkPhoneOwnership_(participantKey, fullName) {
+  if (!participantKey) return { ok: true };
+
+  const sheet = getSheet_();
+  const values = sheet.getDataRange().getValues();
+  if (values.length <= 1) return { ok: true };
+
+  const headers = values[0];
+  const newNameKey = normalizeName_(fullName);
+  const conflictingNames = [];
+  const seenNameKeys = {};
+
+  for (let i = 1; i < values.length; i++) {
+    const row = values[i];
+    const item = {};
+    headers.forEach(function(header, index) {
+      item[header] = row[index];
+    });
+
+    if (getRecordParticipantKey_(item) !== participantKey) continue;
+
+    const existingNameKey = normalizeName_(item.fullName);
+    if (!existingNameKey) continue;
+
+    if (existingNameKey === newNameKey) {
+      // เบอร์นี้เคยลงทะเบียนไว้กับชื่อเดียวกันแล้ว ถือว่าเป็นคนเดิม บันทึกเพิ่มได้ตามปกติ
+      return { ok: true };
+    }
+
+    if (!seenNameKeys[existingNameKey]) {
+      seenNameKeys[existingNameKey] = true;
+      conflictingNames.push(clean_(item.fullName));
+    }
+  }
+
+  if (conflictingNames.length > 0) {
+    return {
+      ok: false,
+      message: 'เบอร์โทรศัพท์นี้ถูกใช้ลงทะเบียนไว้กับชื่อ "' + conflictingNames.join('", "') + '" แล้ว ' +
+        'กรุณาตรวจสอบเบอร์โทรศัพท์ให้ถูกต้อง ' +
+        'หรือกรอกชื่อให้ตรงกับที่เคยลงทะเบียนไว้หากเป็นคนเดียวกัน'
+    };
+  }
+
+  return { ok: true };
+}
+
+function makeParticipantKey_(phone) {
+  const normalizedPhone = normalizePhone_(phone);
+  return normalizedPhone;
+}
+
+function getRecordParticipantKey_(record) {
+  return normalizePhone_(record.phone) || clean_(record.participantKey);
+}
+
+function numberOrBlank_(value) {
+  return value === '' || value === undefined || value === null ? '' : Number(value);
+}
+
+function round_(value, precision) {
+  const factor = Math.pow(10, precision || 0);
+  return Math.round(value * factor) / factor;
+}
+
+function getBmiStatus_(bmi) {
+  if (bmi === '') return '';
+  if (bmi < 18.5) return 'น้ำหนักน้อย';
+  if (bmi < 23) return 'ปกติ';
+  if (bmi < 25) return 'ท้วม';
+  if (bmi < 30) return 'อ้วนระดับ 1';
+  return 'อ้วนระดับ 2';
+}
+
+function getBpStatus_(systolic, diastolic) {
+  if (!systolic || !diastolic) return '';
+  if (systolic < 120 && diastolic < 80) return 'ปกติ';
+  if (systolic < 140 || diastolic < 90) return 'เริ่มสูง';
+  return 'สูง';
+}
+
+function getSugarStatus_(sugar) {
+  if (!sugar) return '';
+  if (sugar < 100) return 'ปกติ';
+  if (sugar < 126) return 'เสี่ยง';
+  return 'สูง';
+}
+
+function makeEmptyVillageSummary_() {
+  return VILLAGES.map(function(village) {
+    return {
+      village: village,
+      participants: 0,
+      exerciseTarget: 0,
+      improvedWeight: 0,
+      improvedWaist: 0,
+      improvedBp: 0,
+      improvedSugar: 0
+    };
+  });
+}
+
+function applyTextFormats_(sheet) {
+  ['participantId', 'phone', 'participantKey'].forEach(function(header) {
+    const columnIndex = HEADERS.indexOf(header) + 1;
+    if (columnIndex > 0) {
+      sheet.getRange(1, columnIndex, sheet.getMaxRows(), 1).setNumberFormat('@');
+    }
+  });
+}
+
+function getPersonalComparison_(participantKey) {
+  if (!participantKey) return null;
+  const sheet = getSheet_();
+  const values = sheet.getDataRange().getValues();
+  if (values.length <= 1) return null;
+
+  const headers = values[0];
+  const records = values.slice(1).map(function(row) {
+    const item = {};
+    headers.forEach(function(header, index) {
+      item[header] = row[index];
+    });
+    return item;
+  }).filter(function(record) {
+    return getRecordParticipantKey_(record) === participantKey;
+  }).sort(function(a, b) {
+    return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
+  });
+
+  if (!records.length) return null;
+  return makeComparison_(records[0], records[records.length - 1], records.length);
+}
+
+function makeComparison_(first, last, recordCount) {
+  const firstSystolic = Number(first.systolic || 0);
+  const firstDiastolic = Number(first.diastolic || 0);
+  const lastSystolic = Number(last.systolic || 0);
+  const lastDiastolic = Number(last.diastolic || 0);
+  const firstBpAvg = firstSystolic && firstDiastolic ? (firstSystolic + firstDiastolic) / 2 : 0;
+  const lastBpAvg = lastSystolic && lastDiastolic ? (lastSystolic + lastDiastolic) / 2 : 0;
+
+  return {
+    participantKey: getRecordParticipantKey_(last),
+    participantId: clean_(last.participantId),
+    phone: clean_(last.phone),
+    fullName: clean_(last.fullName),
+    village: clean_(last.village),
+    recordCount: recordCount,
+    firstDate: first.timestamp,
+    lastDate: last.timestamp,
+    firstWeightKg: numberOrBlank_(first.weightKg),
+    lastWeightKg: numberOrBlank_(last.weightKg),
+    weightChange: diff_(last.weightKg, first.weightKg),
+    firstWaistCm: numberOrBlank_(first.waistCm),
+    lastWaistCm: numberOrBlank_(last.waistCm),
+    waistChange: diff_(last.waistCm, first.waistCm),
+    firstBloodSugar: numberOrBlank_(first.bloodSugar),
+    lastBloodSugar: numberOrBlank_(last.bloodSugar),
+    sugarChange: diff_(last.bloodSugar, first.bloodSugar),
+    firstBp: firstSystolic && firstDiastolic ? firstSystolic + '/' + firstDiastolic : '',
+    lastBp: lastSystolic && lastDiastolic ? lastSystolic + '/' + lastDiastolic : '',
+    bpChange: firstBpAvg && lastBpAvg ? round_(lastBpAvg - firstBpAvg, 1) : '',
+    lastExerciseDays: numberOrBlank_(last.exerciseDays),
+    exerciseTarget: Number(last.exerciseDays) >= 3 && Number(last.exerciseDays) <= 5
+  };
+}
+
+function diff_(latest, first) {
+  if (latest === '' || latest === undefined || first === '' || first === undefined) return '';
+  const result = Number(latest) - Number(first);
+  return isNaN(result) ? '' : round_(result, 1);
+}
+
+function sendLineRecordNotification_(record, comparison) {
+  const properties = PropertiesService.getScriptProperties();
+  const token = properties.getProperty('LINE_CHANNEL_ACCESS_TOKEN');
+  const to = properties.getProperty('LINE_NOTIFY_TO');
+
+  if (!token || !to) {
+    return {
+      ok: false,
+      skipped: true,
+      message: 'ยังไม่ได้ตั้งค่า LINE_CHANNEL_ACCESS_TOKEN หรือ LINE_NOTIFY_TO'
+    };
+  }
+
+  const message = buildLineRecordMessage_(record, comparison);
+  const response = UrlFetchApp.fetch('https://api.line.me/v2/bot/message/push', {
+    method: 'post',
+    contentType: 'application/json',
+    headers: {
+      Authorization: 'Bearer ' + token
+    },
+    payload: JSON.stringify({
+      to: to,
+      messages: [
+        {
+          type: 'text',
+          text: message
+        }
+      ]
+    }),
+    muteHttpExceptions: true
+  });
+
+  const statusCode = response.getResponseCode();
+  return {
+    ok: statusCode >= 200 && statusCode < 300,
+    statusCode: statusCode,
+    body: response.getContentText()
+  };
+}
+
+function buildLineRecordMessage_(record, comparison) {
+  const lines = [
+    'แจ้งบันทึกข้อมูลสุขภาพ',
+    'โครงการ 3-2-1 คนคำใหญ่ไร้พุง',
+    '',
+    'ชื่อ: ' + clean_(record.fullName),
+    'หมู่บ้าน: ' + clean_(record.village),
+    'โทร: ' + clean_(record.phone),
+    'น้ำหนัก: ' + valueOrDash_(record.weightKg) + ' กก.',
+    'รอบเอว: ' + valueOrDash_(record.waistCm) + ' ซม.',
+    'ความดัน: ' + valueOrDash_(record.systolic) + '/' + valueOrDash_(record.diastolic),
+    'น้ำตาล: ' + valueOrDash_(record.bloodSugar) + ' mg/dL',
+    'ออกกำลังกาย: ' + valueOrDash_(record.exerciseDays) + ' วัน/สัปดาห์'
+  ];
+
+  if (comparison && comparison.recordCount >= 2) {
+    lines.push('');
+    lines.push('เทียบครั้งแรกถึงล่าสุด');
+    lines.push('น้ำหนัก: ' + formatSigned_(comparison.weightChange) + ' กก.');
+    lines.push('รอบเอว: ' + formatSigned_(comparison.waistChange) + ' ซม.');
+    lines.push('น้ำตาล: ' + formatSigned_(comparison.sugarChange) + ' mg/dL');
+  }
+
+  return lines.join('\n');
+}
+
+function valueOrDash_(value) {
+  return value === '' || value === undefined || value === null ? '-' : value;
+}
+
+function formatSigned_(value) {
+  if (value === '' || value === undefined || value === null) return '-';
+  const number = Number(value);
+  return number > 0 ? '+' + number : String(number);
+}
