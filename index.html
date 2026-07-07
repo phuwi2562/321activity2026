@@ -281,6 +281,48 @@
       color: var(--danger);
     }
 
+
+
+    .advice-box {
+      display: grid;
+      gap: 10px;
+    }
+
+    .advice-card {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      background: #fbfdf8;
+    }
+
+    .advice-card.ok {
+      background: #eef9f1;
+      border-color: #cfead6;
+    }
+
+    .advice-card.warn {
+      background: #fff7e8;
+      border-color: #f1d49b;
+    }
+
+    .advice-card.danger {
+      background: #fff0f0;
+      border-color: #f0b7b7;
+    }
+
+    .advice-card strong {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 15px;
+    }
+
+    .advice-card p {
+      margin: 0;
+      color: #31423a;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
     .comparison-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -554,13 +596,51 @@
     .cell-gray { background: #f1f3f2; color: var(--muted); font-weight: 800; }
 
     .report-box {
-      white-space: pre-wrap;
+      white-space: normal;
       border: 1px solid var(--line);
       border-radius: 8px;
       padding: 12px;
       background: #fbfdf8;
       line-height: 1.65;
       font-size: 13px;
+    }
+
+    .publication-section {
+      margin: 0 0 14px;
+      padding-bottom: 12px;
+      border-bottom: 1px dashed var(--line);
+    }
+
+    .publication-section h3 {
+      margin: 0 0 8px;
+      color: var(--green-dark);
+      font-size: 16px;
+    }
+
+    .publication-section p {
+      margin: 0 0 8px;
+      white-space: pre-wrap;
+    }
+
+    .journal-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-size: 12px;
+      background: white;
+    }
+
+    .journal-table th,
+    .journal-table td {
+      border: 1px solid var(--line);
+      padding: 7px;
+      vertical-align: top;
+    }
+
+    .journal-table th {
+      background: #eef7e4;
+      color: var(--green-dark);
+      text-align: left;
     }
 
     .forest-row {
@@ -784,6 +864,18 @@
       <section class="panel">
         <div class="panel-title">
           <div>
+            <h2>คำแนะนำสุขภาพหลังบันทึก</h2>
+            <div class="muted">ระบบจะแจ้งผล BMI ความดัน น้ำตาล พร้อมคำแนะนำและกำลังใจทันที</div>
+          </div>
+        </div>
+        <div id="healthAdvice" class="advice-box">
+          <div class="empty">บันทึกข้อมูลสุขภาพเพื่อรับคำแนะนำเฉพาะบุคคล</div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-title">
+          <div>
             <h2>เปรียบเทียบรายหมู่บ้าน</h2>
             <div class="muted">จำนวนผู้เข้าร่วมและผู้ที่ออกกำลังกายได้ 3-5 วัน/สัปดาห์</div>
           </div>
@@ -953,8 +1045,8 @@
           <div class="empty">เข้าสู่โหมดผู้ดูแล แล้วกดคำนวณสถิติ</div>
         </div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px;">
-          <button class="btn secondary" type="button" id="autoReportBtn">รายงานผลการวิจัยอัตโนมัติ</button>
-          <button class="btn secondary" type="button" id="copyReportBtn">คัดลอกรายงาน</button>
+          <button class="btn secondary" type="button" id="autoReportBtn">Publication Engine</button>
+          <button class="btn secondary" type="button" id="copyReportBtn">คัดลอกบทความ</button>
         </div>
         <div id="subgroupStats" class="history-list" style="margin-top:12px;"></div>
         <div id="forestPlot" class="history-list" style="margin-top:12px;"></div>
@@ -1064,14 +1156,17 @@
         currentPersonalComparison = result.personalComparison || makeComparisonFromRecords(records);
         saveLocalRecords(records);
         renderAll();
-        setStatus(result.message || 'บันทึกข้อมูลสำเร็จ');
+        const savedRecord = result.record || record;
+        renderHealthAdvice(savedRecord);
+        setStatus('บันทึกข้อมูลสำเร็จ ระบบประเมินค่า BMI ความดัน และน้ำตาล พร้อมคำแนะนำให้แล้วครับ');
         form.querySelector('#note').value = '';
-        switchTab('history');
+        switchTab('form');
       } catch (error) {
         records = [record, ...records].slice(0, 200);
         saveLocalRecords(records);
         renderAll();
-        setStatus('บันทึกในเครื่องแล้ว แต่ยังส่งเข้า Google Sheet ไม่สำเร็จ');
+        renderHealthAdvice(record);
+        setStatus('บันทึกในเครื่องแล้ว แต่ยังส่งเข้า Google Sheet ไม่สำเร็จ ระบบยังประเมินและให้คำแนะนำเบื้องต้นได้ครับ');
       }
     });
 
@@ -1268,6 +1363,111 @@
         ? chips.map((chip) => `<span class="chip ${chip.type}">${chip.text}</span>`).join('')
         : '<span class="chip">กรอกข้อมูลเพื่อประเมิน BMI</span>';
     }
+
+
+
+    function renderHealthAdvice(record) {
+      const container = document.getElementById('healthAdvice');
+      if (!container) return;
+
+      const bmi = Number(record.bmi || getBmi(record.heightCm, record.weightKg));
+      const systolic = Number(record.systolic || 0);
+      const diastolic = Number(record.diastolic || 0);
+      const sugar = Number(record.bloodSugar || 0);
+      const name = record.fullName ? `คุณ${escapeHtml(record.fullName)}` : 'ท่าน';
+
+      const bmiStatus = bmi ? getBmiStatus(bmi) : '-';
+      const bpStatus = systolic && diastolic ? getBpStatus(systolic, diastolic) : '-';
+      const sugarStatus = sugar ? getSugarStatus(sugar) : '-';
+
+      const cards = [];
+
+      if (bmi) {
+        cards.push({
+          level: getBmiType(bmi) || 'ok',
+          title: `BMI ${bmi} : ${bmiStatus}`,
+          body: getBmiAdvice(bmi)
+        });
+      }
+
+      if (systolic && diastolic) {
+        cards.push({
+          level: getBpType(systolic, diastolic) || 'ok',
+          title: `ความดันโลหิต ${systolic}/${diastolic} mmHg : ${bpStatus}`,
+          body: getBpAdvice(systolic, diastolic)
+        });
+      }
+
+      if (sugar) {
+        cards.push({
+          level: getSugarType(sugar) || 'ok',
+          title: `ระดับน้ำตาลในเลือด ${sugar} mg/dL : ${sugarStatus}`,
+          body: getSugarAdvice(sugar)
+        });
+      }
+
+      cards.push({
+        level: 'ok',
+        title: `ขอบคุณครับ ${name} 🌿`,
+        body: 'ขอบคุณที่ร่วมบันทึกข้อมูลสุขภาพกับโครงการ 3-2-1 คนคำใหญ่ไร้พุง ขอเชิญออกกำลังกายต่อเนื่องอย่างน้อย 3 วัน/สัปดาห์ ครั้งละประมาณ 30–60 นาที ดื่มน้ำให้เพียงพอ ลดหวาน มัน เค็ม และกลับมาบันทึกซ้ำเพื่อดูแนวโน้มสุขภาพย้อนหลังของตนเองครับ คุณทำได้ครับ เราไปต่อด้วยกัน 💪'
+      });
+
+      container.innerHTML = cards.map((card) => `
+        <article class="advice-card ${card.level}">
+          <strong>${card.title}</strong>
+          <p>${card.body}</p>
+        </article>
+      `).join('');
+    }
+
+    function getBmiAdvice(bmi) {
+      if (bmi < 18.5) {
+        return 'ค่า BMI อยู่ในเกณฑ์น้ำหนักน้อย ควรรับประทานอาหารให้ครบ 5 หมู่ เพิ่มโปรตีนที่เหมาะสม และออกกำลังกายเสริมสร้างกล้ามเนื้ออย่างค่อยเป็นค่อยไป';
+      }
+      if (bmi < 23) {
+        return 'ค่า BMI อยู่ในเกณฑ์ปกติ ขอชื่นชมครับ ควรรักษาพฤติกรรมดีต่อเนื่อง ออกกำลังกายสม่ำเสมอ และติดตามน้ำหนัก/รอบเอวเป็นระยะ';
+      }
+      if (bmi < 25) {
+        return 'ค่า BMI เริ่มสูงกว่ามาตรฐานเล็กน้อย แนะนำเพิ่มการเดินเร็วหรือออกกำลังกายแบบแอโรบิก ลดเครื่องดื่มหวาน ลดของทอด และติดตามน้ำหนักกับรอบเอวทุกสัปดาห์';
+      }
+      if (bmi < 30) {
+        return 'ค่า BMI สูงกว่ามาตรฐาน แนะนำตั้งเป้าลดน้ำหนักอย่างปลอดภัย 0.5–1 กก./สัปดาห์ เพิ่มกิจกรรมทางกาย ลดหวาน มัน เค็ม และขอคำแนะนำจาก อสม.หรือเจ้าหน้าที่ รพ.สต. หากมีโรคประจำตัว';
+      }
+      return 'ค่า BMI อยู่ในเกณฑ์อ้วนระดับสูง ควรได้รับการติดตามใกล้ชิด แนะนำปรึกษาเจ้าหน้าที่สุขภาพเพื่อวางแผนลดน้ำหนักอย่างเหมาะสม และเริ่มออกกำลังกายเบา ๆ เช่น เดินช้า/เดินเร็วตามกำลังอย่างสม่ำเสมอ';
+    }
+
+    function getBpAdvice(systolic, diastolic) {
+      const s = Number(systolic);
+      const d = Number(diastolic);
+      if (s < 120 && d < 80) {
+        return 'ค่าความดันอยู่ในเกณฑ์ปกติ ควรรักษาพฤติกรรมดีต่อเนื่อง ลดเค็ม ออกกำลังกาย และพักผ่อนให้เพียงพอ';
+      }
+      if (s < 140 && d < 90) {
+        return 'ค่าความดันเริ่มสูง ควรลดอาหารเค็ม/น้ำปลา/ผงชูรส เพิ่มผัก ออกกำลังกายต่อเนื่อง และวัดซ้ำในช่วงเวลาที่พักเพียงพอ';
+      }
+      return 'ค่าความดันอยู่ในเกณฑ์สูง ควรนั่งพัก 5–10 นาทีแล้ววัดซ้ำ หากยังสูงหรือมีอาการปวดศีรษะ แน่นหน้าอก เหนื่อยง่าย ชาหรืออ่อนแรง ควรติดต่อเจ้าหน้าที่สุขภาพทันที';
+    }
+
+    function getSugarAdvice(sugar) {
+      const value = Number(sugar);
+      if (value < 100) {
+        return 'ค่าน้ำตาลอยู่ในเกณฑ์ปกติ ควรรักษาพฤติกรรมดี ลดหวาน เลือกคาร์โบไฮเดรตพอดี และออกกำลังกายต่อเนื่อง';
+      }
+      if (value < 126) {
+        return 'ค่าน้ำตาลอยู่ในกลุ่มเสี่ยง ควรลดน้ำหวาน ขนมหวาน แป้งขัดสี เพิ่มผักและการเดินเร็วหลังอาหาร และติดตามซ้ำตามนัด';
+      }
+      return 'ค่าน้ำตาลอยู่ในเกณฑ์สูง ควรปรึกษาเจ้าหน้าที่สุขภาพเพื่อตรวจยืนยันและวางแผนดูแล ลดอาหารหวาน/แป้ง และติดตามค่าอย่างต่อเนื่อง';
+    }
+
+    function escapeHtml(value) {
+      return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
 
     function renderAll() {
       updateHealthChips();
@@ -1648,18 +1848,75 @@
     function renderAutoReport(stats) {
       const box = document.getElementById('autoReportBox');
       if (!box) return;
-      if (!stats || !stats.autoReport) {
+      if (!stats || (!stats.publicationReport && !stats.autoReport)) {
         box.style.display = 'block';
         box.textContent = 'ยังไม่มีรายงาน กรุณากดคำนวณสถิติก่อน';
         return;
       }
       box.style.display = 'block';
-      box.textContent = stats.autoReport;
-      setResearchStatus('สร้างรายงานผลการวิจัยอัตโนมัติแล้ว สามารถคัดลอกไปใส่รูปเล่ม/บทคัดย่อได้');
+      if (stats.publicationReport) {
+        box.innerHTML = renderPublicationReportHtml(stats.publicationReport);
+        setResearchStatus('Publication Engine สร้างบทคัดย่อ Results Discussion Conclusion ตาราง และคำอธิบายรูปแล้ว');
+      } else {
+        box.textContent = stats.autoReport;
+        setResearchStatus('สร้างรายงานผลการวิจัยอัตโนมัติแล้ว สามารถคัดลอกไปใส่รูปเล่ม/บทคัดย่อได้');
+      }
+    }
+
+
+    function renderPublicationReportHtml(report) {
+      const renderTextBlock = (title, text) => `
+        <section class="publication-section">
+          <h3>${escapeHtml(title)}</h3>
+          <p>${escapeHtml(text || '-')}</p>
+        </section>
+      `;
+      const renderTable = (title, table) => {
+        if (!table || !table.headers || !table.rows) return '';
+        return `
+          <section class="publication-section">
+            <h3>${escapeHtml(title)}</h3>
+            <table class="journal-table">
+              <thead><tr>${table.headers.map((head) => `<th>${escapeHtml(head)}</th>`).join('')}</tr></thead>
+              <tbody>
+                ${table.rows.map((row) => `<tr>${row.map((cell) => `<td>${escapeHtml(cell)}</td>`).join('')}</tr>`).join('')}
+              </tbody>
+            </table>
+          </section>
+        `;
+      };
+      const figures = (report.figures || []).map((item) => `<li>${escapeHtml(item)}</li>`).join('');
+      return `
+        <section class="publication-section">
+          <h3>Publication Engine</h3>
+          <p><strong>พื้นที่วิเคราะห์:</strong> ${escapeHtml(report.area || '-')}<br><strong>รูปแบบการศึกษา:</strong> ${escapeHtml(report.design || '-')}<br><strong>จำนวนตัวอย่าง:</strong> ${escapeHtml(String(report.n || 0))} คู่ข้อมูลก่อน–หลัง</p>
+        </section>
+        ${renderTextBlock('บทคัดย่อภาษาไทย', report.abstractTh)}
+        ${renderTextBlock('Abstract ภาษาอังกฤษ', report.abstractEn)}
+        ${renderTextBlock('Results', report.results)}
+        ${renderTextBlock('Discussion', report.discussion)}
+        ${renderTextBlock('Conclusion', report.conclusion)}
+        ${renderTable('Table 1. Characteristics of participants', report.table1)}
+        ${renderTable('Table 2. Pretest–posttest outcomes', report.table2)}
+        ${renderTable('Table 3. Subgroup analysis', report.table3)}
+        <section class="publication-section">
+          <h3>Figures ตามรูปแบบวารสาร</h3>
+          <ul>${figures || '<li>ยังไม่มีคำอธิบายรูป</li>'}</ul>
+        </section>
+      `;
+    }
+
+    function escapeHtml(value) {
+      return String(value === null || value === undefined ? '' : value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
     }
 
     function copyAutoReport() {
-      const text = (currentResearchStats && currentResearchStats.autoReport) || document.getElementById('autoReportBox').textContent || '';
+      const text = (currentResearchStats && currentResearchStats.publicationReport && currentResearchStats.publicationReport.plainText) || (currentResearchStats && currentResearchStats.autoReport) || document.getElementById('autoReportBox').textContent || '';
       if (!text.trim()) {
         setResearchStatus('ยังไม่มีรายงานให้คัดลอก');
         return;
@@ -1980,7 +2237,7 @@
       const s = Number(systolic);
       const d = Number(diastolic);
       if (s < 120 && d < 80) return 'ปกติ';
-      if (s < 140 || d < 90) return 'เริ่มสูง';
+      if (s < 140 && d < 90) return 'เริ่มสูง';
       return 'สูง';
     }
 
