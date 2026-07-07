@@ -488,12 +488,125 @@
       line-height: 1.6;
     }
 
+
+
+    .stats-table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 8px;
+      font-size: 12px;
+    }
+
+    .stats-table th,
+    .stats-table td {
+      border-bottom: 1px solid var(--line);
+      padding: 8px 6px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .stats-table th {
+      color: var(--green-dark);
+      background: #eef7e4;
+      font-weight: 800;
+    }
+
+    .stats-table td.num,
+    .stats-table th.num {
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .research-toolbar {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 8px;
+      align-items: end;
+      margin-bottom: 12px;
+    }
+
+
+    .heatmap-table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 8px;
+      font-size: 12px;
+    }
+
+    .heatmap-table th,
+    .heatmap-table td {
+      border: 1px solid var(--line);
+      padding: 8px;
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    .heatmap-table th {
+      background: #eef7e4;
+      color: var(--green-dark);
+    }
+
+    .cell-green { background: #dff5df; color: #116533; font-weight: 800; }
+    .cell-yellow { background: #fff4dd; color: #9a6200; font-weight: 800; }
+    .cell-red { background: #ffe9e9; color: #ad2b2b; font-weight: 800; }
+    .cell-gray { background: #f1f3f2; color: var(--muted); font-weight: 800; }
+
+    .report-box {
+      white-space: pre-wrap;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      background: #fbfdf8;
+      line-height: 1.65;
+      font-size: 13px;
+    }
+
+    .forest-row {
+      display: grid;
+      grid-template-columns: 132px 1fr 74px;
+      gap: 8px;
+      align-items: center;
+      margin: 8px 0;
+      font-size: 12px;
+    }
+
+    .forest-axis {
+      position: relative;
+      height: 24px;
+      border-radius: 999px;
+      background: #edf2ee;
+      overflow: hidden;
+    }
+
+    .forest-zero {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 2px;
+      background: rgba(0,0,0,.18);
+    }
+
+    .forest-point {
+      position: absolute;
+      top: 4px;
+      width: 16px;
+      height: 16px;
+      border-radius: 999px;
+      background: var(--green);
+      transform: translateX(-50%);
+    }
+
     @media (max-width: 520px) {
-      .filter-grid {
+      .filter-grid,
+      .research-toolbar {
         grid-template-columns: 1fr 1fr;
       }
 
-      .filter-grid .btn {
+      .filter-grid .btn,
+      .research-toolbar .btn {
         grid-column: 1 / -1;
       }
     }
@@ -515,7 +628,7 @@
     <section class="hero">
       <div>
         <div class="hero-top">
-          <div class="eyebrow">บ้านคำใหญ่ หมู่ที่ 11 | ปี 2569</div>
+          <div class="eyebrow">คนคำใหญ่ร่วมใจออกกำลังกาย | ปี 2569</div>
           <button type="button" id="adminToggleBtn" class="admin-toggle" title="สำหรับผู้ดูแลระบบ">⚙</button>
         </div>
         <h1>3-2-1 คนคำใหญ่ไร้พุง</h1>
@@ -790,6 +903,69 @@
       <section class="panel">
         <div class="panel-title">
           <div>
+            <h2>AI Statistic Engine</h2>
+            <div class="muted">ตรวจ normality → เลือก Paired t-test/Wilcoxon → คำนวณ effect size → แปลผลวิชาการอัตโนมัติ</div>
+          </div>
+        </div>
+        <div class="research-toolbar">
+          <div class="field">
+            <label for="researchVillage">หมู่บ้าน</label>
+            <select id="researchVillage">
+              <option value="ทั้งหมด">ทั้งหมด</option>
+              <option value="หมู่ 1 บ้านหัวสนาม">หมู่ 1 บ้านหัวสนาม</option>
+              <option value="หมู่ 2 บ้านคำเจริญ">หมู่ 2 บ้านคำเจริญ</option>
+              <option value="หมู่ 3 บ้านชัยศรี">หมู่ 3 บ้านชัยศรี</option>
+              <option value="หมู่ 4 บ้านนาดี">หมู่ 4 บ้านนาดี</option>
+              <option value="หมู่ 5 บ้านห้วยยาง">หมู่ 5 บ้านห้วยยาง</option>
+              <option value="หมู่ 6 บ้านห้วยม่วง">หมู่ 6 บ้านห้วยม่วง</option>
+              <option value="หมู่ 7 บ้านคำใหญ่">หมู่ 7 บ้านคำใหญ่</option>
+              <option value="หมู่ 8 บ้านคำถาวร">หมู่ 8 บ้านคำถาวร</option>
+              <option value="หมู่ 9 บ้านโพธิ์ทอง">หมู่ 9 บ้านโพธิ์ทอง</option>
+              <option value="หมู่ 10 บ้านโคกป่ากุง">หมู่ 10 บ้านโคกป่ากุง</option>
+              <option value="หมู่ 11 บ้านคำใหญ่">หมู่ 11 บ้านคำใหญ่</option>
+              <option value="หมู่ 12 บ้านคำเจริญ">หมู่ 12 บ้านคำเจริญ</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="researchMetric">ตัวแปรกราฟเส้น</label>
+            <select id="researchMetric">
+              <option value="weightKg">น้ำหนัก</option>
+              <option value="waistCm">รอบเอว</option>
+              <option value="bmi">BMI</option>
+              <option value="systolic">ความดันตัวบน</option>
+              <option value="diastolic">ความดันตัวล่าง</option>
+              <option value="bloodSugar">น้ำตาลในเลือด</option>
+              <option value="exerciseDays">ออกกำลังกาย วัน/สัปดาห์</option>
+              <option value="exerciseMinutes">นาทีออกกำลังกาย</option>
+            </select>
+          </div>
+          <button class="btn" type="button" id="researchLoadBtn">วิเคราะห์ด้วย AI Statistic Engine</button>
+        </div>
+        <div class="quick">
+          <div class="metric"><span>คู่ข้อมูลก่อน-หลัง</span><strong id="researchPairs">0</strong></div>
+          <div class="metric"><span>ตัวแปรที่คำนวณได้</span><strong id="researchMetricCount">0</strong></div>
+          <div class="metric"><span>p &lt; .05</span><strong id="researchSigCount">0</strong></div>
+        </div>
+        <div class="chart-wrap" style="margin-bottom:12px;">
+          <canvas id="adminResearchChart" width="640" height="420"></canvas>
+        </div>
+        <div id="researchStatsTable">
+          <div class="empty">เข้าสู่โหมดผู้ดูแล แล้วกดคำนวณสถิติ</div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px;">
+          <button class="btn secondary" type="button" id="autoReportBtn">รายงานผลการวิจัยอัตโนมัติ</button>
+          <button class="btn secondary" type="button" id="copyReportBtn">คัดลอกรายงาน</button>
+        </div>
+        <div id="subgroupStats" class="history-list" style="margin-top:12px;"></div>
+        <div id="forestPlot" class="history-list" style="margin-top:12px;"></div>
+        <div id="villageHeatmap" style="margin-top:12px;"></div>
+        <div id="autoReportBox" class="report-box" style="margin-top:12px; display:none;"></div>
+        <div id="researchStatus" class="status"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-title">
+          <div>
             <h2>รายบุคคลทั้งหมด</h2>
             <div class="muted">สรุปผลเปลี่ยนแปลงของแต่ละคนจากครั้งแรกถึงครั้งล่าสุด</div>
           </div>
@@ -817,12 +993,15 @@
     const historyList = document.getElementById('historyList');
     const chart = document.getElementById('trendChart');
     const chartStatus = document.getElementById('chartStatus');
+    const adminResearchChart = document.getElementById('adminResearchChart');
+    const researchStatus = document.getElementById('researchStatus');
     const storageKey = 'khamyai-321-records';
     const adminKey = 'khamyai-321-admin-password';
     let records = loadLocalRecords();
     let currentPersonalComparison = makeComparisonFromRecords(records);
     let isAdmin = false;
     let adminPassword = sessionStorage.getItem(adminKey) || '';
+    let currentResearchStats = null;
 
     document.querySelectorAll('.nav button').forEach((button) => {
       button.addEventListener('click', () => switchTab(button.dataset.tab));
@@ -836,6 +1015,22 @@
 
     document.getElementById('chartFilterBtn').addEventListener('click', () => {
       loadChartRecords();
+    });
+
+    document.getElementById('researchLoadBtn').addEventListener('click', () => {
+      loadResearchStats();
+    });
+
+    document.getElementById('autoReportBtn').addEventListener('click', () => {
+      renderAutoReport(currentResearchStats);
+    });
+
+    document.getElementById('copyReportBtn').addEventListener('click', () => {
+      copyAutoReport();
+    });
+
+    document.getElementById('researchMetric').addEventListener('change', () => {
+      drawAdminResearchChart(currentResearchStats);
     });
 
     ['heightCm', 'weightKg', 'waistCm', 'systolic', 'diastolic', 'bloodSugar', 'exerciseDays'].forEach((id) => {
@@ -894,6 +1089,9 @@
         syncChartFilter();
         drawChart(records);
         renderResearchMetrics(records);
+      }
+      if (name === 'kpi' && isAdmin && !currentResearchStats) {
+        loadResearchStats();
       }
     }
 
@@ -956,6 +1154,12 @@
           applyAdminVisibility(isAdmin);
         }
         renderSummary(summary);
+        if (summary && summary.researchStats) {
+          currentResearchStats = summary.researchStats;
+          renderResearchStatsTable(currentResearchStats);
+          drawAdminResearchChart(currentResearchStats);
+          renderAdvancedResearchBlocks(currentResearchStats);
+        }
       } catch (error) {
         renderSummary(makeLocalSummary());
       }
@@ -1002,6 +1206,27 @@
       }
     }
 
+
+    async function loadResearchStats() {
+      if (!isAdmin) return;
+      const village = document.getElementById('researchVillage').value || 'ทั้งหมด';
+      setResearchStatus('กำลังคำนวณสถิติแบบ paired t-test...');
+      try {
+        const result = await apiCall('researchStats', { password: adminPassword, village });
+        if (!result || result.ok === false) {
+          setResearchStatus((result && result.message) || 'คำนวณสถิติไม่สำเร็จ');
+          return;
+        }
+        currentResearchStats = result;
+        renderResearchStatsTable(result);
+        drawAdminResearchChart(result);
+        renderAdvancedResearchBlocks(result);
+        setResearchStatus(`วิเคราะห์ ${result.village || 'ทั้งหมด'} สำเร็จ ใช้คู่ข้อมูล ${result.totalPairs || 0} คน`);
+      } catch (error) {
+        setResearchStatus('ดึงค่าสถิติจาก Google Sheet ไม่สำเร็จ');
+      }
+    }
+
     function apiCall(action, payload) {
       const body = { action, ...payload };
       if (window.google && google.script && google.script.run) {
@@ -1011,6 +1236,7 @@
           if (action === 'listRecords') runner.listRecords(payload.phone, payload.limit || null);
           if (action === 'summary') runner.getSummary(payload.password || '');
           if (action === 'checkAdmin') runner.checkAdmin(payload.password || '');
+          if (action === 'researchStats') runner.getResearchStats(payload.password || '', payload.village || 'ทั้งหมด');
         });
       }
 
@@ -1257,6 +1483,282 @@
           <div class="muted" style="margin-top: 8px;">แนวโน้มต่อครั้ง ${formatChange(metric.slope)} ${metric.unit} | n=${metric.n}</div>
         </article>
       `;
+    }
+
+
+    function renderResearchStatsTable(stats) {
+      const container = document.getElementById('researchStatsTable');
+      if (!stats || !stats.metrics) {
+        container.innerHTML = '<div class="empty">ยังไม่มีค่าสถิติ</div>';
+        return;
+      }
+
+      const metrics = stats.metrics.filter((item) => item.enough);
+      document.getElementById('researchPairs').textContent = stats.totalPairs || 0;
+      document.getElementById('researchMetricCount').textContent = metrics.length;
+      document.getElementById('researchSigCount').textContent = metrics.filter((item) => Number(item.p) < 0.05).length;
+
+      if (!metrics.length) {
+        container.innerHTML = '<div class="empty">ต้องมีข้อมูลก่อน-หลังอย่างน้อย 2 คน/ตัวแปร จึงคำนวณ AI Statistic Engine ได้</div>';
+        return;
+      }
+
+      container.innerHTML = `
+        <article class="history-item" style="margin-bottom:12px;">
+          <div class="history-head">
+            <strong>AI Statistic Engine</strong>
+            <span class="chip">Auto select test</span>
+          </div>
+          <div class="muted">ระบบตรวจ normality ของค่า difference แล้วเลือก Paired t-test เมื่อข้อมูลใกล้เคียงปกติ หรือ Wilcoxon signed-rank test เมื่อข้อมูลไม่เป็นปกติ พร้อมคำนวณ effect size และแปลผลเชิงวิชาการอัตโนมัติ</div>
+        </article>
+        <table class="stats-table">
+          <thead>
+            <tr>
+              <th>ตัวแปร</th>
+              <th class="num">n</th>
+              <th class="num">ก่อน Mean±SD</th>
+              <th class="num">หลัง Mean±SD</th>
+              <th class="num">Δ</th>
+              <th>Normality</th>
+              <th>สถิติที่เลือก</th>
+              <th class="num">ค่าสถิติ</th>
+              <th class="num">p</th>
+              <th>Effect size</th>
+              <th>AI แปลผล</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${metrics.map((item) => {
+              const norm = item.normality || {};
+              const statDf = item.testDf === null || item.testDf === undefined ? '' : `(${item.testDf})`;
+              const effectLabel = `${item.effectType || 'Effect'}=${item.effectValue ?? item.effectDz}`;
+              return `
+                <tr>
+                  <td><strong>${item.label}</strong><br><span class="muted">${item.unit || ''}</span></td>
+                  <td class="num">${item.n}</td>
+                  <td class="num">${item.preMean}±${item.preSd}</td>
+                  <td class="num">${item.postMean}±${item.postSd}</td>
+                  <td class="num">${formatChange(item.meanDiff)}<br><span class="muted">${formatChange(item.percentChange)}%</span></td>
+                  <td>${norm.isNormal ? 'ผ่าน' : 'ไม่ผ่าน'}<br><span class="muted">${norm.method || '-'} p=${formatP(norm.p)}</span></td>
+                  <td><strong>${item.selectedTest || '-'}</strong><br><span class="muted">${item.selectionReason || ''}</span></td>
+                  <td class="num">${item.testStatisticLabel || 't'}${statDf}<br><strong>${item.testStatistic ?? item.t}</strong></td>
+                  <td class="num">${formatP(item.p)}</td>
+                  <td>${effectLabel}<br><span class="muted">ระดับ ${translateEffectUi(item.effectMagnitude)}</span></td>
+                  <td>${item.aiInterpretation || item.interpretation}<br><span class="muted">95%CI ${item.ci95Low} ถึง ${item.ci95High}</span></td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function translateEffectUi(level) {
+      if (level === 'large') return 'สูง';
+      if (level === 'medium') return 'ปานกลาง';
+      if (level === 'small') return 'ต่ำ';
+      if (level === 'trivial') return 'น้อยมาก';
+      return '-';
+    }
+
+
+    function renderAdvancedResearchBlocks(stats) {
+      renderSubgroupStats(stats);
+      renderForestPlot(stats);
+      renderVillageHeatmap(stats);
+      const box = document.getElementById('autoReportBox');
+      if (box) box.style.display = 'none';
+    }
+
+    function renderSubgroupStats(stats) {
+      const container = document.getElementById('subgroupStats');
+      if (!container) return;
+      const ageGroups = stats && stats.subgroupStats ? (stats.subgroupStats.ageGroups || []) : [];
+      const riskGroups = stats && stats.subgroupStats ? (stats.subgroupStats.riskGroups || []) : [];
+      if (!ageGroups.length && !riskGroups.length) {
+        container.innerHTML = '';
+        return;
+      }
+      const renderGroup = (title, rows) => `
+        <article class="history-item">
+          <div class="history-head"><strong>${title}</strong><span class="chip">Subgroup</span></div>
+          <div class="mini-grid">
+            ${rows.map((row) => `
+              <div class="mini"><span>${row.group} | n=${row.n}</span><b>Δ น้ำหนัก ${formatChange(row.primaryMeanDiff || 0)}</b><span>dz=${row.primaryEffect === null ? '-' : row.primaryEffect}</span></div>
+            `).join('')}
+          </div>
+        </article>
+      `;
+      container.innerHTML = renderGroup('วิเคราะห์แยกกลุ่มอายุ', ageGroups) + renderGroup('วิเคราะห์แยกกลุ่มเสี่ยง/โรค', riskGroups);
+    }
+
+    function renderForestPlot(stats) {
+      const container = document.getElementById('forestPlot');
+      if (!container) return;
+      const villageEffects = stats && stats.villageEffects ? stats.villageEffects.filter((item) => item.weightEffect !== null) : [];
+      if (!villageEffects.length) {
+        container.innerHTML = '<div class="empty">Forest plot ต้องมีข้อมูลก่อน-หลังรายหมู่บ้านอย่างน้อย 2 คน</div>';
+        return;
+      }
+      const rows = villageEffects.map((item) => {
+        const effect = Number(item.weightEffect || 0);
+        const left = Math.max(4, Math.min(96, 50 + effect * 22));
+        return `
+          <div class="forest-row">
+            <strong>${shortVillage(item.village)}<br><span class="muted">n=${item.n}</span></strong>
+            <div class="forest-axis"><span class="forest-zero"></span><span class="forest-point" style="left:${left}%;"></span></div>
+            <span>dz=${effect.toFixed(2)}</span>
+          </div>
+        `;
+      }).join('');
+      container.innerHTML = `
+        <article class="history-item">
+          <div class="history-head"><strong>Forest plot: Effect size รายหมู่บ้าน</strong><span class="chip">น้ำหนัก</span></div>
+          <div class="muted">จุดซ้ายของเส้นกลาง = น้ำหนักลดลงมากขึ้น | ใช้ dz จาก paired design</div>
+          ${rows}
+        </article>
+      `;
+    }
+
+    function renderVillageHeatmap(stats) {
+      const container = document.getElementById('villageHeatmap');
+      if (!container) return;
+      const rows = stats && stats.heatmap ? stats.heatmap : [];
+      if (!rows.length) {
+        container.innerHTML = '';
+        return;
+      }
+      const cell = (item) => `<td class="cell-${item.level || 'gray'}" title="${item.label || ''}">${item.level === 'green' ? 'ดี' : item.level === 'yellow' ? 'เฝ้า' : item.level === 'red' ? 'ตาม' : '-'}</td>`;
+      container.innerHTML = `
+        <table class="heatmap-table">
+          <thead><tr><th>หมู่บ้าน</th><th>n</th><th>น้ำหนัก</th><th>รอบเอว</th><th>BP</th><th>น้ำตาล</th></tr></thead>
+          <tbody>
+            ${rows.map((row) => `
+              <tr>
+                <td style="text-align:left;"><strong>${shortVillage(row.village)}</strong></td>
+                <td>${row.n || 0}</td>
+                ${cell(row.weightKg)}${cell(row.waistCm)}${cell(row.systolic)}${cell(row.bloodSugar)}
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function renderAutoReport(stats) {
+      const box = document.getElementById('autoReportBox');
+      if (!box) return;
+      if (!stats || !stats.autoReport) {
+        box.style.display = 'block';
+        box.textContent = 'ยังไม่มีรายงาน กรุณากดคำนวณสถิติก่อน';
+        return;
+      }
+      box.style.display = 'block';
+      box.textContent = stats.autoReport;
+      setResearchStatus('สร้างรายงานผลการวิจัยอัตโนมัติแล้ว สามารถคัดลอกไปใส่รูปเล่ม/บทคัดย่อได้');
+    }
+
+    function copyAutoReport() {
+      const text = (currentResearchStats && currentResearchStats.autoReport) || document.getElementById('autoReportBox').textContent || '';
+      if (!text.trim()) {
+        setResearchStatus('ยังไม่มีรายงานให้คัดลอก');
+        return;
+      }
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(() => setResearchStatus('คัดลอกรายงานแล้ว'));
+      } else {
+        setResearchStatus('อุปกรณ์นี้ไม่รองรับการคัดลอกอัตโนมัติ กรุณาเลือกข้อความแล้วคัดลอกเอง');
+      }
+    }
+
+    function shortVillage(village) {
+      return String(village || '').replace('หมู่ ', 'ม.');
+    }
+
+    function drawAdminResearchChart(stats) {
+      if (!adminResearchChart) return;
+      const ctx = adminResearchChart.getContext('2d');
+      const width = adminResearchChart.width;
+      const height = adminResearchChart.height;
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, width, height);
+
+      const metricKey = document.getElementById('researchMetric').value;
+      const metricLabel = document.getElementById('researchMetric').selectedOptions[0].textContent;
+      const trend = stats && stats.trend ? stats.trend.filter((item) => item[metricKey] !== null && item[metricKey] !== undefined) : [];
+      if (!trend.length) {
+        ctx.fillStyle = '#66736d';
+        ctx.font = '24px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('ยังไม่มีข้อมูลสำหรับกราฟรายหมู่บ้าน', width / 2, height / 2);
+        return;
+      }
+
+      const values = trend.map((item) => Number(item[metricKey])).filter((item) => !Number.isNaN(item));
+      const min = Math.min(...values) - 2;
+      const max = Math.max(...values) + 2;
+      const left = 58;
+      const top = 34;
+      const right = 24;
+      const bottom = 52;
+      const plotW = width - left - right;
+      const plotH = height - top - bottom;
+
+      ctx.strokeStyle = '#dce7df';
+      ctx.lineWidth = 1;
+      ctx.font = '18px sans-serif';
+      ctx.fillStyle = '#66736d';
+      ctx.textAlign = 'right';
+      for (let i = 0; i <= 4; i++) {
+        const y = top + (plotH / 4) * i;
+        const label = Math.round((max - ((max - min) / 4) * i) * 10) / 10;
+        ctx.beginPath();
+        ctx.moveTo(left, y);
+        ctx.lineTo(width - right, y);
+        ctx.stroke();
+        ctx.fillText(label, left - 8, y + 6);
+      }
+
+      const points = trend.map((item, index) => ({
+        x: left + (trend.length === 1 ? plotW / 2 : (plotW / (trend.length - 1)) * index),
+        y: top + plotH - ((Number(item[metricKey]) - min) / (max - min || 1)) * plotH,
+        label: item.label,
+        n: item.n
+      }));
+
+      ctx.strokeStyle = '#0f8f5f';
+      ctx.fillStyle = '#0f8f5f';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      points.forEach((point, index) => {
+        if (index === 0) ctx.moveTo(point.x, point.y);
+        else ctx.lineTo(point.x, point.y);
+      });
+      ctx.stroke();
+
+      points.forEach((point) => {
+        ctx.beginPath();
+        ctx.arc(point.x, point.y, 5, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      ctx.fillStyle = '#17231d';
+      ctx.textAlign = 'center';
+      ctx.font = '20px sans-serif';
+      ctx.fillText(`${metricLabel} | ${stats.village || 'ทั้งหมด'}`, width / 2, 22);
+      ctx.font = '16px sans-serif';
+      ctx.fillStyle = '#66736d';
+      points.forEach((point, index) => {
+        ctx.fillText(String(index + 1), point.x, height - 22);
+        ctx.fillText(`n=${point.n}`, point.x, height - 6);
+      });
+    }
+
+    function formatP(p) {
+      const value = Number(p);
+      if (Number.isNaN(value)) return '-';
+      return value < 0.001 ? '<.001' : value.toFixed(3);
     }
 
     function renderSummary(summary) {
@@ -1514,6 +2016,10 @@
 
     function setChartStatus(message) {
       chartStatus.textContent = message;
+    }
+
+    function setResearchStatus(message) {
+      if (researchStatus) researchStatus.textContent = message;
     }
 
     function syncChartFilter() {
